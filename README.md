@@ -1,4 +1,5 @@
 # Docker Compose NAS
+(This is a fork; see the original [repo here](https://github.com/AdrienPoupa/docker-compose-nas))
 
 After searching for the perfect NAS solution, I realized what I wanted could be achieved 
 with some Docker containers on a vanilla Linux box. The result is an opinionated Docker Compose configuration capable of 
