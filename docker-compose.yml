@@ -64,6 +64,8 @@ services:
   sonarr:
     image: lscr.io/linuxserver/sonarr
     container_name: sonarr
+    depends_on:
+      - qbittorrent
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
@@ -90,6 +92,8 @@ services:
   radarr:
     image: lscr.io/linuxserver/radarr
     container_name: radarr
+    depends_on:
+      - qbittorrent
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
@@ -116,6 +120,8 @@ services:
   lidarr:
     image: lscr.io/linuxserver/lidarr
     container_name: lidarr
+    depends_on:
+      - qbittorrent
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
