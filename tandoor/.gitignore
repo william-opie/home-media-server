@@ -1,8 +1,0 @@
-.env
-backup.env
-/backup
-!/backup/.gitkeep
-/database
-!/database/.gitkeep
-/mediafiles
-!/mediafiles/.gitkeep

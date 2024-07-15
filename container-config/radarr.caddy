@@ -1,0 +1,4 @@
+@radarr host radarr.{env.DOMAIN}
+handle @radarr {
+    reverse_proxy http://radarr:7878
+}

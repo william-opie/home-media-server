@@ -1,0 +1,25 @@
+{
+    # do not attempt to install certs on the docker container
+    skip_install_trust
+}
+
+(localTLS) {
+    tls internal {
+        on_demand
+    }
+}
+
+(localHostOnly) {
+    @localHostOnly remote_ip 127.0.0.1
+}
+
+(localSubnets) {
+    @localSubnets remote_ip private_ranges
+}
+
+https://*.{env.DOMAIN} {
+    tls <cloudflare_email_goes_here> {
+        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    }
+    import *.caddy
+}

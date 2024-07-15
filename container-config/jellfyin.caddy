@@ -1,0 +1,4 @@
+@jellyfin host jellyfin.{env.DOMAIN}
+handle @jellyfin {
+    reverse_proxy http://jellyfin:8096
+}

@@ -1,0 +1,5 @@
+@pihole host pihole.{env.DOMAIN}
+handle @pihole {
+    reverse_proxy http://pihole
+    redir / /admin 307
+}

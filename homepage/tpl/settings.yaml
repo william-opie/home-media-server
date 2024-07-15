@@ -4,6 +4,8 @@
 
 title: {{HOMEPAGE_VAR_TITLE}}
 
+background: https://images.pexels.com/photos/933054/pexels-photo-933054.jpeg
+
 headerStyle: {{HOMEPAGE_VAR_HEADER_STYLE}}
 
 layout:
@@ -11,6 +13,9 @@ layout:
     style: row
     columns: 3
   Download:
+    style: row
+    columns: 2
+  Networking:
     style: row
     columns: 2
 

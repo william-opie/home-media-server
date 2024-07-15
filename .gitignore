@@ -1,4 +1,17 @@
 .env
+Caddyfile
+etc-pihole/*.db
+etc-pihole/*.conf
+etc-pihole/*.bak
+etc-pihole/*.leases
+etc-pihole/versions
+etc-pihole/local.list
+etc-pihole/logrotate
+etc-pihole/*.sha1
+etc-pihole/migration_backup/*
+etc-pihole/*.domains
+etc-pihole/*.list
+etc-dnsmasq.d/*
 .idea
 docker-compose.override.yml
 /homepage/logs
@@ -15,7 +28,3 @@ docker-compose.override.yml
 /pia-shared
 /letsencrypt
 /jellyseerr
-/adguardhome/certs
-/adguardhome/conf
-/adguardhome/work
-/sabnzbd

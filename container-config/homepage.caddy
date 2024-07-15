@@ -1,0 +1,4 @@
+@homepage host home.{env.DOMAIN}
+handle @homepage {
+    reverse_proxy http://homepage:3000
+}

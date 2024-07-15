@@ -1,0 +1,4 @@
+@qbittorrent host qbittorrent.{env.DOMAIN}
+handle @qbittorrent {
+    reverse_proxy http://vpn:8080
+}

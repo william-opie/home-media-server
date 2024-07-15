@@ -1,0 +1,4 @@
+@jellyseerr host jellyseerr.{env.DOMAIN}
+handle @jellyseerr {
+    reverse_proxy http://jellyseerr:5055
+}

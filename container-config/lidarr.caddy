@@ -1,0 +1,4 @@
+@lidarr host lidarr.{env.DOMAIN}
+handle @lidarr {
+    reverse_proxy http://lidarr:8686
+}

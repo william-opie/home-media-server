@@ -1,0 +1,4 @@
+@flaresolverr host flaresolverr.{env.DOMAIN}
+handle @flaresolverr {
+    reverse_proxy http://flaresolverr:8191
+}
