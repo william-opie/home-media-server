@@ -1,13 +1,14 @@
 # Docker Compose NAS
-(This is a fork; see the original [repo here](https://github.com/AdrienPoupa/docker-compose-nas))
+This is a fork; see the original [docker-compose-nas project repo here](https://github.com/AdrienPoupa/docker-compose-nas). 
 
-After searching for the perfect NAS solution, I realized what I wanted could be achieved 
-with some Docker containers on a vanilla Linux box. The result is an opinionated Docker Compose configuration capable of 
-browsing indexers to retrieve media resources and downloading them through a WireGuard VPN with port forwarding.
-SSL certificates and remote access through Tailscale are supported.
+Most of the README content comes from the original repo; I have made some edits to account for the changes I have made in this fork.
 
-Requirements: Any Docker-capable recent Linux box with Docker Engine and Docker Compose V2.
-I am running it in Ubuntu Server 22.04; I also tested this setup on a [Synology DS220+ with DSM 7.1](#synology-quirks).
+This is a simple Docker compose project used to create a media server on your home network.
+
+This fork differs from the original in that it uses Caddy as a reverse proxy (instead of Traefik),
+and Pihole is installed by default (instead of Adguard, which is an optional add-on in the original project).
+
+Requirements: Any Docker-capable recent Linux distro with Docker Engine and Docker Compose V2.
 
 ![Docker-Compose NAS Homepage](https://github.com/AdrienPoupa/docker-compose-nas/assets/15086425/3492a9f6-3779-49a5-b052-4193844f16f0)
 
@@ -28,61 +29,33 @@ I am running it in Ubuntu Server 22.04; I also tested this setup on a [Synology 
   * [Jellyfin](#jellyfin)
   * [Homepage](#homepage)
   * [Jellyseerr](#jellyseerr)
-  * [Traefik and SSL Certificates](#traefik-and-ssl-certificates)
+  * [FlareSolverr](#flaresolverr)
+  * [Caddy and SSL Certificates](#caddy-and-ssl-certificates)
     * [Accessing from the outside with Tailscale](#accessing-from-the-outside-with-tailscale)
-  * [Optional Services](#optional-services)
-    * [FlareSolverr](#flaresolverr)
-    * [SABnzbd](#sabnzbd)
-    * [AdGuard Home](#adguard-home)
-      * [Encryption](#encryption)
-      * [DHCP](#dhcp)
-      * [Expose DNS Server with Tailscale](#expose-dns-server-with-tailscale)
-    * [Tandoor](#tandoor)
-    * [Joplin](#joplin)
-    * [Home Assistant](#home-assistant)
-    * [Immich](#immich)
+    * [Expose DNS Server with Tailscale](#expose-dns-server-with-tailscale)
   * [Customization](#customization)
     * [Optional: Using the VPN for *arr apps](#optional-using-the-vpn-for-arr-apps)
-  * [Synology Quirks](#synology-quirks)
-    * [Free Ports 80 and 443](#free-ports-80-and-443)
-    * [Install Synology WireGuard](#install-synology-wireguard)
-    * [Free Port 1900](#free-port-1900)
-    * [User Permissions](#user-permissions)
-    * [Synology DHCP Server and Adguard Home Port Conflict](#synology-dhcp-server-and-adguard-home-port-conflict)
-  * [Use Separate Paths for Torrents and Storage](#use-separate-paths-for-torrents-and-storage)
-  * [NFS Share](#nfs-share)
-  * [Static IP](#static-ip)
-  * [Laptop Specific Configuration](#laptop-specific-configuration)
 <!-- TOC -->
 
 ## Applications
 
-| **Application**                                                    | **Description**                                                                                                                                      | **Image**                                                                                | **URL**      |
-|--------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|--------------|
-| [Sonarr](https://sonarr.tv)                                        | PVR for newsgroup and bittorrent users                                                                                                               | [linuxserver/sonarr](https://hub.docker.com/r/linuxserver/sonarr)                        | /sonarr      |
-| [Radarr](https://radarr.video)                                     | Movie collection manager for Usenet and BitTorrent users                                                                                             | [linuxserver/radarr](https://hub.docker.com/r/linuxserver/radarr)                        | /radarr      |
-| [Bazarr](https://www.bazarr.media/)                                | Companion application to Sonarr and Radarr that manages and downloads subtitles                                                                      | [linuxserver/bazarr](https://hub.docker.com/r/linuxserver/bazarr)                        | /bazarr      |
-| [Prowlarr](https://github.com/Prowlarr/Prowlarr)                   | Indexer aggregator for Sonarr and Radarr                                                                                                             | [linuxserver/prowlarr:latest](https://hub.docker.com/r/linuxserver/prowlarr)             | /prowlarr    |
-| [PIA WireGuard VPN](https://github.com/thrnz/docker-wireguard-pia) | Encapsulate qBittorrent traffic in [PIA](https://www.privateinternetaccess.com/) using [WireGuard](https://www.wireguard.com/) with port forwarding. | [thrnz/docker-wireguard-pia](https://hub.docker.com/r/thrnz/docker-wireguard-pia)        |              |
-| [qBittorrent](https://www.qbittorrent.org)                         | Bittorrent client with a complete web UI<br/>Uses VPN network<br/>Using Libtorrent 1.x                                                               | [linuxserver/qbittorrent:libtorrentv1](https://hub.docker.com/r/linuxserver/qbittorrent) | /qbittorrent |
-| [Unpackerr](https://unpackerr.zip)                                 | Automated Archive Extractions                                                                                                                        | [golift/unpackerr](https://hub.docker.com/r/golift/unpackerr)                            |              |
-| [Jellyfin](https://jellyfin.org)                                   | Media server designed to organize, manage, and share digital media files to networked devices                                                        | [linuxserver/jellyfin](https://hub.docker.com/r/linuxserver/jellyfin)                    | /jellyfin    |
-| [Jellyseer](https://jellyfin.org)                                  | Manages requests for your media library                                                                                                              | [fallenbagel/jellyseerr](https://hub.docker.com/r/fallenbagel/jellyseerr)                | /jellyseer   |
-| [Homepage](https://gethomepage.dev)                                | Application dashboard                                                                                                                                | [gethomepage/homepage](https://github.com/gethomepage/homepage/pkgs/container/homepage)  | /            |
-| [Traefik](https://traefik.io)                                      | Reverse proxy                                                                                                                                        | [traefik](https://hub.docker.com/_/traefik)                                              |              |
-| [Watchtower](https://containrrr.dev/watchtower/)                   | Automated Docker images update                                                                                                                       | [containrrr/watchtower](https://hub.docker.com/r/containrrr/watchtower)                  |              |
-| [Autoheal](https://github.com/willfarrell/docker-autoheal/)        | Monitor and restart unhealthy Docker containers                                                                                                      | [willfarrell/autoheal](https://hub.docker.com/r/willfarrell/autoheal)                    |              |
-| [Lidarr](https://lidarr.audio)                                     | Optional - Music collection manager for Usenet and BitTorrent users<br/>Enable with `COMPOSE_PROFILES=lidarr`                                        | [linuxserver/lidarr](https://hub.docker.com/r/linuxserver/lidarr)                        | /lidarr      |
-| [SABnzbd](https://sabnzbd.org/)                                    | Optional - Free and easy binary newsreader<br/>Enable with `COMPOSE_PROFILES=sabnzbd`                                                                | [linuxserver/sabnzbd](https://hub.docker.com/r/linuxserver/sabnzbd)                      | /sabnzbd     |
-| [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr)       | Optional - Proxy server to bypass Cloudflare protection in Prowlarr<br/>Enable with `COMPOSE_PROFILES=flaresolverr`                                  | [flaresolverr/flaresolverr](https://hub.docker.com/r/flaresolverr/flaresolverr)          |              |
-| [AdGuard Home](https://adguard.com/en/adguard-home/overview.html)  | Optional - Network-wide software for blocking ads & tracking<br/>Enable with `COMPOSE_PROFILES=adguardhome`                                          | [adguard/adguardhome](https://hub.docker.com/r/adguard/adguardhome)                      |              |
-| [Tandoor](https://tandoor.dev)                                     | Optional - Smart recipe management<br/>Enable with `COMPOSE_PROFILES=tandoor`                                                                        | [vabene1111/recipes](https://hub.docker.com/r/vabene1111/recipes)                        | /recipes     |
-| [Joplin](https://joplinapp.org/)                                   | Optional - Note taking application<br/>Enable with `COMPOSE_PROFILES=joplin`                                                                         | [joplin/server](https://hub.docker.com/r/joplin/server)                                  | /joplin      |
-| [Home Assistant](https://www.home-assistant.io/)                   | Optional - Open source home automation that puts local control and privacy first<br/>Enable with `COMPOSE_PROFILES=homeassistant`                    | [home-assistant/home-assistant:stable](https://ghcr.io/home-assistant/home-assistant)    |              |
-| [Immich](https://immich.app//)                                     | Optional - Self-hosted photo and video management solution<br/>Enable with `COMPOSE_PROFILES=immich`                                                 | [immich-app/immich-server:release](https://ghcr.io/immich-app/immich-server)             |              |
-
-Optional containers are not enabled by default, they need to be enabled, 
-see [Optional Services](#optional-services) for more information.
+| **Application**                                                    | **Description**                                                                                                                                      | **Image**                                                                                        | **SUBDOMAIN** |
+|--------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|---------------|
+| [Sonarr](https://sonarr.tv)                                        | PVR for newsgroup and bittorrent users                                                                                                               | [linuxserver/sonarr](https://hub.docker.com/r/linuxserver/sonarr)                                | sonarr.       |
+| [Radarr](https://radarr.video)                                     | Movie collection manager for Usenet and BitTorrent users                                                                                             | [linuxserver/radarr](https://hub.docker.com/r/linuxserver/radarr)                                | radarr.       |
+| [Bazarr](https://www.bazarr.media/)                                | Companion application to Sonarr and Radarr that manages and downloads subtitles                                                                      | [linuxserver/bazarr](https://hub.docker.com/r/linuxserver/bazarr)                                | bazarr.       |
+| [Prowlarr](https://github.com/Prowlarr/Prowlarr)                   | Indexer aggregator for Sonarr and Radarr                                                                                                             | [linuxserver/prowlarr:latest](https://hub.docker.com/r/linuxserver/prowlarr)                     | prowlarr.     |
+| [PIA WireGuard VPN](https://github.com/thrnz/docker-wireguard-pia) | Encapsulate qBittorrent traffic in [PIA](https://www.privateinternetaccess.com/) using [WireGuard](https://www.wireguard.com/) with port forwarding. | [thrnz/docker-wireguard-pia](https://hub.docker.com/r/thrnz/docker-wireguard-pia)                |               |
+| [qBittorrent](https://www.qbittorrent.org)                         | Bittorrent client with a complete web UI<br/>Uses VPN network<br/>Using Libtorrent 1.x                                                               | [linuxserver/qbittorrent:libtorrentv1](https://hub.docker.com/r/linuxserver/qbittorrent)         | qbittorrent.  |
+| [Unpackerr](https://unpackerr.zip)                                 | Automated Archive Extractions                                                                                                                        | [golift/unpackerr](https://hub.docker.com/r/golift/unpackerr)                                    |               |
+| [Jellyfin](https://jellyfin.org)                                   | Media server designed to organize, manage, and share digital media files to networked devices                                                        | [linuxserver/jellyfin](https://hub.docker.com/r/linuxserver/jellyfin)                            | jellyfin.     |
+| [Jellyseer](https://jellyfin.org)                                  | Manages requests for your media library                                                                                                              | [fallenbagel/jellyseerr](https://hub.docker.com/r/fallenbagel/jellyseerr)                        | jellyseer.    |
+| [Homepage](https://gethomepage.dev)                                | Application dashboard                                                                                                                                | [gethomepage/homepage](https://github.com/gethomepage/homepage/pkgs/container/homepage)          | home.         |
+| [Caddy](https://https://caddyserver.com/docs/)                     | Reverse proxy                                                                                                                                        | [slothcroissant/caddy-cloudflaredns](https://hub.docker.com/r/slothcroissant/caddy-cloudflaredns)|               |
+| [Watchtower](https://containrrr.dev/watchtower/)                   | Automated Docker images update                                                                                                                       | [containrrr/watchtower](https://hub.docker.com/r/containrrr/watchtower)                          |               |
+| [Autoheal](https://github.com/willfarrell/docker-autoheal/)        | Monitor and restart unhealthy Docker containers                                                                                                      | [willfarrell/autoheal](https://hub.docker.com/r/willfarrell/autoheal)                            |               |
+| [Lidarr](https://lidarr.audio)                                     | Music collection manager for Usenet and BitTorrent users<br/>                                                                                        | [linuxserver/lidarr](https://hub.docker.com/r/linuxserver/lidarr)                                | lidarr.       |
+| [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr)       | Proxy server to bypass Cloudflare protection in Prowlarr<br/>                                                                                        | [flaresolverr/flaresolverr](https://hub.docker.com/r/flaresolverr/flaresolverr)                  |               |
 
 ## Quick Start
 
@@ -90,52 +63,59 @@ see [Optional Services](#optional-services) for more information.
 
 For the first time, run `./update-config.sh` to update the applications base URLs and set the API keys in `.env`.
 
-If you want to show Jellyfin information in the homepage, create it in Jellyfin settings and fill `JELLYFIN_API_KEY`.
+If you want to see Jellyfin information on the homepage widget, create an API key in Jellyfin's Settings and enter the value for `JELLYFIN_API_KEY`.
+If you want to see Pihole information on the homepage widget, retrieve the Pihole API key from the admin dashboard and enter the value for `PIHOLE_API_KEY`.
 
 ## Environment Variables
 
 | Variable                       | Description                                                                                                                                                                                            | Default                                          |
 |--------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------|
-| `COMPOSE_FILE`                 | Docker compose files to load                                                                                                                                                                           |                                                  |
-| `COMPOSE_PROFILES`             | Docker compose profiles to load (`flaresolverr`, `adguardhome`, `sabnzbd`)                                                                                                                             |                                                  |
+| `CLOUDFLARE_API_TOKEN`         | Cloudflare API token with Edit zone DNS permissions                                                                                                                                                    |                                                  |
+| `CLOUDFLARE_EMAIL`             | Email address used for your Cloudflare account                                                                                                                                                         |                                                  |
 | `USER_ID`                      | ID of the user to use in Docker containers                                                                                                                                                             | `1000`                                           |
 | `GROUP_ID`                     | ID of the user group to use in Docker containers                                                                                                                                                       | `1000`                                           |
-| `TIMEZONE`                     | TimeZone used by the container.                                                                                                                                                                        | `America/New_York`                               |
+| `TIMEZONE`                     | TimeZone used by the container.                                                                                                                                                                        | `America/Chicago `                               |
 | `CONFIG_ROOT`                  | Host location for configuration files                                                                                                                                                                  | `.`                                              |
 | `DATA_ROOT`                    | Host location of the data files                                                                                                                                                                        | `/mnt/data`                                      |
 | `DOWNLOAD_ROOT`                | Host download location for qBittorrent, should be a subfolder of `DATA_ROOT`                                                                                                                           | `/mnt/data/torrents`                             |
-| `PIA_LOCATION`                 | Servers to use for PIA. [see list here](https://serverlist.piaservers.net/vpninfo/servers/v6)                                                                                                          | `ca` (Montreal, Canada)                          |
-| `PIA_USER`                     | PIA username                                                                                                                                                                                           |                                                  |
-| `PIA_PASS`                     | PIA password                                                                                                                                                                                           |                                                  |
-| `PIA_LOCAL_NETWORK`            | PIA local network                                                                                                                                                                                      | `192.168.0.0/16`                                 |
-| `HOSTNAME`                     | Hostname of the NAS, could be a local IP or a domain name                                                                                                                                              | `localhost`                                      |
-| `ADGUARD_HOSTNAME`             | Optional - AdGuard Home hostname used, if enabled                                                                                                                                                      |                                                  |
-| `ADGUARD_USERNAME`             | Optional - AdGuard Home username to show details in the homepage, if enabled                                                                                                                           |                                                  |
-| `ADGUARD_PASSWORD`             | Optional - AdGuard Home password to show details in the homepage, if enabled                                                                                                                           |                                                  |
+| `DOMAIN`                       | Domain name for the media server/NAS                                                                                                                                                                   |                                                  |
+| `JELLYFIN_URL`                 | Subdomain for Jellyfin                                                                                                                                                                                 | `https://jellyfin.${DOMAIN}`                     |
+| `JELLYFIN_API_KEY`             | Jellyfin API key to show information in the homepage                                                                                                                                                   |                                                  |
+| `PIHOLE_URL`                   | Subdomain for Pihole                                                                                                                                                                                   | `https://pihole.${DOMAIN}`                       |
+| `PIHOLE_API_KEY`               | Pihole API key to show information in the homepage                                                                                                                                                     |                                                  |
+| `PIHOLE_ADMIN_PASSWORD`        | Pihole admin password to access the web UI                                                                                                                                                             | `superSecretPassword`                            |
+| `SONARR_URL`                   | Subdomain for Sonarr                                                                                                                                                                                   | `https://sonarr.${DOMAIN}`                       |
+| `SONARR_API_KEY`               | Sonarr API key to show information in the homepage                                                                                                                                                     |                                                  |
+| `RADARR_URL`                   | Subdomain for Radarr                                                                                                                                                                                   | `https://radarr.${DOMAIN}`                       |
+| `RADARR_API_KEY`               | Radarr API key to show information in the homepage                                                                                                                                                     |                                                  |
+| `LIDARR_URL`                   | Subdomain for Lidarr                                                                                                                                                                                   | `https://lidarr.${DOMAIN}`                       |
+| `LIDARR_API_KEY`               | Lidarr API key to show information in the homepage                                                                                                                                                     |                                                  |
+| `PROWLARR_URL`                 | Subdomain for Prowlarr                                                                                                                                                                                 | `https://prowlarr.${DOMAIN}`                     |
+| `PROWLARR_API_KEY`             | Prowlarr API key to show information in the homepage                                                                                                                                                   |                                                  |
+| `BAZARR_URL`                   | Subdomain for Bazarr                                                                                                                                                                                   | `https://bazarr.${DOMAIN}`                       |
+| `BAZARR_API_KEY`               | Bazarr API key to show information in the homepage                                                                                                                                                     |                                                  |
+| `JELLYSEERR_URL`               | Subdomain for Jellyseerr                                                                                                                                                                               | `https://jellyseerr.${DOMAIN}`                   |
+| `JELLYSEERR_API_KEY`           | Jellyseer API key to show information in the homepage                                                                                                                                                  |                                                  |
+| `QBITTORRENT_URL`              | Subdomain for qBittorrent                                                                                                                                                                              | `https://qbittorrent.${DOMAIN}`                  |
 | `QBITTORRENT_USERNAME`         | qBittorrent username to access the web UI                                                                                                                                                              | `admin`                                          |
 | `QBITTORRENT_PASSWORD`         | qBittorrent password to access the web UI                                                                                                                                                              | `adminadmin`                                     |
-| `DNS_CHALLENGE`                | Enable/Disable DNS01 challenge, set to `false` to disable.                                                                                                                                             | `true`                                           |
-| `DNS_CHALLENGE_PROVIDER`       | Provider for DNS01 challenge, [see list here](https://doc.traefik.io/traefik/https/acme/#providers).                                                                                                   | `cloudflare`                                     |
-| `LETS_ENCRYPT_CA_SERVER`       | Let's Encrypt CA Server used to generate certificates, set to production by default.<br/>Set to `https://acme-staging-v02.api.letsencrypt.org/directory` to test your changes with the staging server. | `https://acme-v02.api.letsencrypt.org/directory` |
-| `LETS_ENCRYPT_EMAIL`           | E-mail address used to send expiration notifications                                                                                                                                                   |                                                  |
-| `CLOUDFLARE_EMAIL`             | CloudFlare Account email                                                                                                                                                                               |                                                  |
-| `CLOUDFLARE_DNS_API_TOKEN`     | API token with `DNS:Edit` permission                                                                                                                                                                   |                                                  |
-| `CLOUDFLARE_ZONE_API_TOKEN`    | API token with `Zone:Read` permission                                                                                                                                                                  |                                                  |
-| `SONARR_API_KEY`               | Sonarr API key to show information in the homepage                                                                                                                                                     |                                                  |
-| `RADARR_API_KEY`               | Radarr API key to show information in the homepage                                                                                                                                                     |                                                  |
-| `LIDARR_API_KEY`               | Lidarr API key to show information in the homepage                                                                                                                                                     |                                                  |
-| `PROWLARR_API_KEY`             | Prowlarr API key to show information in the homepage                                                                                                                                                   |                                                  |
-| `BAZARR_API_KEY`               | Bazarr API key to show information in the homepage                                                                                                                                                     |                                                  |
-| `JELLYFIN_API_KEY`             | Jellyfin API key to show information in the homepage                                                                                                                                                   |                                                  |
-| `JELLYSEERR_API_KEY`           | Jellyseer API key to show information in the homepage                                                                                                                                                  |                                                  |
-| `SABNZBD_API_KEY`              | Sabnzbd API key to show information in the homepage                                                                                                                                                    |                                                  |
-| `HOMEPAGE_VAR_TITLE`           | Title of the homepage                                                                                                                                                                                  | `Docker-Compose NAS`                             |
+| `PIA_LOCATION`                 | Servers to use for PIA. [see list here](https://serverlist.piaservers.net/vpninfo/servers/v6)                                                                                                          | `us_atlanta`                                     |
+| `PIA_USER`                     | PIA username                                                                                                                                                                                           |                                                  |
+| `PIA_PASS`                     | PIA password                                                                                                                                                                                           |                                                  |
+| `PIA_LOCAL_NETWORK`            | PIA local network                                                                                                                                                                                      | `192.168.1.0/24`                                 |
+| `HOMEPAGE_VAR_TITLE`           | Title of the homepage                                                                                                                                                                                  | `Home`                                           |
 | `HOMEPAGE_VAR_SEARCH_PROVIDER` | Homepage search provider, [see list here](https://gethomepage.dev/en/widgets/search/)                                                                                                                  | `google`                                         |
 | `HOMEPAGE_VAR_HEADER_STYLE`    | Homepage header style, [see list here](https://gethomepage.dev/en/configs/settings/#header-style)                                                                                                      | `boxed`                                          |
-| `HOMEPAGE_VAR_WEATHER_CITY`    | Homepage weather city name                                                                                                                                                                             |                                                  |
-| `HOMEPAGE_VAR_WEATHER_LAT`     | Homepage weather city latitude                                                                                                                                                                         |                                                  |
-| `HOMEPAGE_VAR_WEATHER_LONG`    | Homepage weather city longitude                                                                                                                                                                        |                                                  |
-| `HOMEPAGE_VAR_WEATHER_UNIT`    | Homepage weather unit, either `metric` or `imperial`                                                                                                                                                   | `metric`                                         |
+| `HOMEPAGE_VAR_WEATHER_CITY`    | Homepage weather city name                                                                                                                                                                             | `Waco`                                           |
+| `HOMEPAGE_VAR_WEATHER_LAT`     | Homepage weather city latitude                                                                                                                                                                         | `31.559814`                                      |
+| `HOMEPAGE_VAR_WEATHER_LONG`    | Homepage weather city longitude                                                                                                                                                                        | `-97.141800`                                     |
+| `HOMEPAGE_VAR_WEATHER_UNIT`    | Homepage weather unit, either `metric` or `imperial`                                                                                                                                                   | `imperial`                                       |
+| `TAILSCALE_IP`                 | The Tailscale IP address for your server                                                                                                                                                               |                                                  |
+| `LAN_IP`                       | The static LAN IP address for your server                                                                                                                                                              |                                                  |
+| `ROUTER_IP`                    | Your router/gateway IP address                                                                                                                                                                         | `192.168.1.1`                                    |
+| `LAN_CIDR`                     | Your LAN's subnet range                                                                                                                                                                                | `192.168.1.1/24`                                 |
+| `UPSTREAM_DNS`                 | Upstream DNS servers for Pihole (Defaults are Cloudflare & OpenDNS)                                                                                                                                    | `1.1.1.1;1.0.0.1;208.67.222.222;208.67.220.220`  |
+| `WEBHOOK_URL`                  | Webhook URL for notifications when your containers are forced to restart by autoheal (ex. ntfy.sh/test)                                                                                                |                                                  |
 
 ## PIA WireGuard VPN
 
@@ -149,9 +129,9 @@ but you could use other providers:
 
 For PIA + WireGuard, fill `.env` and fill it with your PIA credentials.
 
-The location of the server it will connect to is set by `LOC=ca`, defaulting to Montreal - Canada.
+The location of the server it will connect to is set to `LOC=us_atlanta`, defaulting to Atlanta, GA (USA).
 
-You need to fill the credentials in the `PIA_*` environment variable, 
+You need to fill the credentials in the `PIA_*` environment variables, 
 otherwise the VPN container will exit and qBittorrent will not start.
 
 ## Sonarr, Radarr & Lidarr
@@ -258,142 +238,35 @@ To setup, go to https://hostname/jellyseerr/setup, and set the URLs as follows:
   - Port: 8989
   - URL Base: /sonarr
 
-## Traefik and SSL Certificates
-
-While you can use the private IP to access your NAS, how cool would it be for it to be accessible through a subdomain
-with a valid SSL certificate?
-
-Traefik makes this trivial by using Let's Encrypt and one of its
-[supported ACME challenge providers](https://doc.traefik.io/traefik/https/acme).
-
-Let's assume we are using `nas.domain.com` as custom subdomain.
-
-The idea is to create an A record pointing to the private IP of the NAS, `192.168.0.10` for example:
-```
-nas.domain.com.	1	IN	A	192.168.0.10
-```
-
-The record will be publicly exposed but not resolve given this is a private IP.
-
-Given the NAS is not accessible from the internet, we need to do a dnsChallenge.
-Here we will be using CloudFlare, but the mechanism will be the same for all DNS providers
-baring environment variable changes, see the Traefik documentation above and [Lego's documentation](https://go-acme.github.io/lego/dns).
-
-Then, fill the CloudFlare `.env` entries.
-
-If you want to test your configuration first, use the Let's Encrypt staging server by updating `LETS_ENCRYPT_CA_SERVER`'s
-value in `.env`:
-```
-LETS_ENCRYPT_CA_SERVER=https://acme-staging-v02.api.letsencrypt.org/directory
-```
-
-If it worked, you will see the staging certificate at https://nas.domain.com.
-You may remove the `./letsencrypt/acme.json` file and restart the services to issue the real certificate.
-
-You are free to use any DNS01 provider. Simply replace `DNS_CHALLENGE_PROVIDER` with your own provider, 
-[see complete list here](https://doc.traefik.io/traefik/https/acme/#providers). 
-You will also need to inject the environments variables specific to your provider.
-
-Certificate generation can be disabled by setting `DNS_CHALLENGE` to `false`.
-
-### Accessing from the outside with Tailscale
-
-If we want to make it reachable from outside the network without opening ports or exposing it to the internet, I found
-[Tailscale](https://tailscale.com) to be a great solution: create a network, run the client on both the NAS and the device
-you are connecting from, and they will see each other.
-
-In this case, the A record should point to the IP Tailscale assigned to the NAS, eg `100.xxx.xxx.xxx`:
-```
-nas.domain.com.	1	IN	A	100.xxx.xxx.xxx
-```
-
-See [here](https://tailscale.com/kb/installation) for installation instructions.
-
-However, this means you will always need to be connected to Tailscale to access your NAS, even locally.
-This can be remedied by overriding the DNS entry for the NAS domain like `192.168.0.10 nas.domain.com`
-in your local DNS resolver such as Pi-Hole.
-
-This way, when connected to the local network, the NAS is accessible directly from the private IP,
-and from the outside you need to connect to Tailscale first, then the NAS domain will be accessible.
-
-## Optional Services
-
-Optional services are not launched by default and enabled by appending their profile name to the 
-`COMPOSE_PROFILES` environment variable (see [Docker documentation](https://docs.docker.com/compose/profiles)).
-
-Say you want to enable FlareSolverr, you should have `COMPOSE_PROFILES=flaresolverr`.
-
-Multiple optional services can be enabled separated by commas: `COMPOSE_PROFILES=flaresolverr,adguardhome`.
-
-### FlareSolverr
+## FlareSolverr
 
 In Prowlarr, add the FlareSolverr indexer with the URL http://flaresolverr:8191/
 
-### SABnzbd
+## Caddy and SSL Certificates
 
-Enable SABnzbd by setting `COMPOSE_PROFILES=sabnzbd`. It will be accessible at `/sabnzbd`.
+While you can use a private IP to access your server, how cool would it be for it to be accessible through a subdomain
+with a valid SSL certificate?
 
-If that is not the case, the `url_base` parameter in `sabnzbd.ini` should be set to `/sabnzbd`.
+Caddy makes this easy by using Let's Encrypt and a
+[supported ACME challenge provider](https://caddy.community/t/how-to-use-dns-provider-modules-in-caddy-2/8148). For simplicity, this project uses Cloudflare.
 
-Additionally, `host_whitelist` value should be set to your hostname.
+Set the CloudFlare `.env` values, and make sure to enter your Cloudflare account email address on the base Caddyfile. (Note: You will need to rename 
+the `example_Caddyfile` file to `Caddyfile` for Caddy to function properly).
 
-### AdGuard Home
+### Accessing from the outside with Tailscale
 
-Enable AdGuard Home by setting `COMPOSE_PROFILES=adguardhome`.
+If you want to access your media server when you're away from home (without opening ports or exposing your server to the internet),
+[Tailscale](https://tailscale.com) is a great solution. Simply create a Tailnet, install the client on both the server and your other devices, 
+and they will then be able to connect to one another.
 
-Set the `ADGUARD_HOSTNAME`, I chose a different subdomain to use secure DNS without the folder.
+After installing Tailscale on your server, update the `.env` file with your server's `TAILSCALE_IP` address.
 
-On first run, specify the port 3000 and enable listen on all interfaces to make it work with Tailscale.
+See [here](https://tailscale.com/kb/installation) for installation instructions.
 
-If after running `docker compose up -d`, you're getting `network docker-compose-nas declared as external, but could not be found`,
-run `docker network create docker-compose-nas` first.
+### Expose DNS Server with Tailscale
 
-#### Encryption
+[Tailscale's documentation](https://tailscale.com/kb/1114/pi-hole) provides instructions for using your Pihole server when you're away from your LAN.
 
-In Settings > Encryption Settings, set the certificates path to `/opt/adguardhome/certs/certs/<YOUR_HOSTNAME>.crt`
-and the private key to `/opt/adguardhome/certs/private/<YOUR_HOSTNAME>.key`, those files are created by Traefik cert dumper
-from the ACME certificates Traefik generates in JSON.
-
-#### DHCP
-
-If you want to use the AdGuard Home DHCP server, for example because your router does not allow changing its DNS server,
-you will need to select the `eth0` DHCP interface matching `10.0.0.10`, then specify the 
-Gateway IP to match your router address (`192.168.0.1` for example) and set a range of IP addresses assigned to local
-devices.
-
-In `adguardhome/docker-compose.yml`, set the network interface `dhcp-relay` should listen to. By default, it is set to
-`enp2s0`, but you may need to change it to your host's network interface, verify it with `ip a`.
-
-In the configuration (`adguardhome/conf/AdGuardHome.yaml`), set the DHCP options 6th key to your NAS internal IP address:
-```yml
-dhcp:
-  dhcpv4:
-    options:
-      - 6 ips 192.168.0.10,192.168.0.10
-```
-
-Enable DHCP Relay by setting `COMPOSE_PROFILES=adguardhome-dhcp`.
-
-#### Expose DNS Server with Tailscale
-
-Based on [Tailscale's documentation](https://tailscale.com/kb/1114/pi-hole), it is easy to use your AdGuard server everywhere.
-Just make sure that AdGuard Home listens to all interfaces.
-
-### Tandoor
-
-See [here](./tandoor/README.md).
-
-### Joplin
-
-See [here](./joplin/README.md).
-
-### Home Assistant
-
-See [here](./homeassistant/README.md).
-
-### Immich
-
-See [here](./immich/README.md).
 
 ## Customization
 
@@ -434,57 +307,6 @@ to the healthcheck, eg: `test: [ "CMD", "curl", "--fail", "http://127.0.0.1:7878
 
 Then in Prowlarr, use `localhost` rather than `vpn` as the hostname, since they are on the same network.
 
-## Synology Quirks
-
-Docker compose NAS can run on DSM 7.1, with a few extra steps.
-
-### Free Ports 80 and 443
-
-By default, ports 80 and 443 are used by Nginx but not actually used for anything useful. Free them by creating a new task
-in the Task Scheduler > Create > Triggered Task > User-defined script. Leave the Event as `Boot-up` and the `root` user,
-go to Task Settings and paste the following in User-defined script:
-```
-sed -i -e 's/80/81/' -e 's/443/444/' /usr/syno/share/nginx/server.mustache /usr/syno/share/nginx/DSM.mustache /usr/syno/share/nginx/WWWService.mustache
-
-synosystemctl restart nginx
-```
-
-### Install Synology WireGuard
-
-Since WireGuard is not part of DSM's kernel, an external package must be installed for the `vpn` container to run.
-
-For DSM 7.1, download and install the package corresponding to your NAS CPU architecture 
-[from here](https://github.com/vegardit/synology-wireguard/releases).
-
-As specified in the [project's README](https://github.com/vegardit/synology-wireguard#installation), 
-the package must be run as `root` from the command line: `sudo /var/packages/WireGuard/scripts/start`
-
-### Free Port 1900
-
-Jellyfin will fail to run by default since the port 1900 
-[is not free](https://lookanotherblog.com/resolve-port-1900-conflict-between-plex-and-synology/). 
-You may free it by going to  Control Panel > File Services > Advanced > SSTP > Untick `Enable Windows network discovery`.
-
-### User Permissions
-
-By default, the user and groups are set to `1000` as it is the default on Ubuntu and many other Linux distributions.
-However, that is not the case in Synology; the first user should have an ID of `1026` and a group of `100`. 
-You may check yours with `id`. 
-Update the `USER_ID` and `GROUP_ID` in `.env` with your IDs.
-Not updating them may result in [permission issues](https://github.com/AdrienPoupa/docker-compose-nas/issues/10).
-
-```
-USER_ID=1026
-GROUP_ID=100
-```
-
-### Synology DHCP Server and Adguard Home Port Conflict
-
-If you are using the Synology DHCP Server package, it will use port 53 even if it does not need it. This is because
-it uses Dnsmasq to handle DHCP requests, but does not serve DNS queries. The port can be released by editing (as root) 
-`/usr/local/lib/systemd/system/pkg-dhcpserver.service` and [adding -p 0](https://www.reddit.com/r/synology/comments/njwdao/comment/j2d23qr/?utm_source=reddit&utm_medium=web2x&context=3):
-`ExecStart=/var/packages/DhcpServer/target/dnsmasq-2.x/usr/bin/dnsmasq --user=DhcpServer --group=DhcpServer --cache-size=200 --conf-file=/etc/dhcpd/dhcpd.conf --dhcp-lease-max=2147483648 -p 0`
-Reboot the NAS and the port 53 will be free for Adguard.
 
 ## Use Separate Paths for Torrents and Storage
 
@@ -508,56 +330,3 @@ services:
 Note you will lose the hard link ability, ie your files will be duplicated.
 
 In Sonarr and Radarr, go to `Settings` > `Importing` > Untick `Use Hardlinks instead of Copy`
-
-## NFS Share
-
-This can be useful to share the media folder to a local player like Kodi or computers in the local network,
-but may not be necessary if Jellyfin is going to be used to access the media.
-
-Install the NFS kernel server: `sudo apt install nfs-kernel-server`
-
-Then edit `/etc/exports` to configure your shares:
-
-`/mnt/data/media 192.168.0.0/255.255.255.0(rw,all_squash,nohide,no_subtree_check,anonuid=1000,anongid=1000)`
-
-This will share the `media` folder to anybody on your local network (192.168.0.x).
-I purposely left out the `sync` flag that would slow down file transfer.
-On [some devices](https://forum.kodi.tv/showthread.php?tid=343434) you may need to use the `insecure`
-option for the share to be available.
-
-Restart the NFS server to apply the changes: `sudo /etc/init.d/nfs-kernel-server restart`
-
-On other machines, you can see the shared folder by adding the following to your `/etc/fstab`:
-
-`192.168.0.10:/mnt/data/media /mnt/nas nfs ro,hard,intr,auto,_netdev 0 0`
-
-## Static IP
-
-Set a static IP, assuming `192.168.0.10` and using Google DNS servers: `sudo nano /etc/netplan/00-installer-config.yaml`
-
-```yaml
-# This is the network config written by 'subiquity'
-network:
-  ethernets:
-    enp2s0:
-      dhcp4: no
-      addresses:
-        - 192.168.0.10/24
-      gateway4: 192.168.0.1
-      nameservers:
-          addresses: [8.8.8.8, 8.8.4.4]
-  version: 2
-```
-
-Apply the plan: `sudo netplan apply`. You can check the server uses the right IP with `ip a`.
-
-## Laptop Specific Configuration
-
-If the server is installed on a laptop, you may want to disable the suspension when the lid is closed:
-`sudo nano /etc/systemd/logind.conf`
-
-Replace:
-- `#HandleLidSwitch=suspend` by `HandleLidSwitch=ignore`
-- `#LidSwitchIgnoreInhibited=yes` by `LidSwitchIgnoreInhibited=no`
-
-Then restart: `sudo service systemd-logind restart`
