@@ -10,7 +10,7 @@ and Pihole is installed by default (instead of Adguard, which is an optional add
 
 Requirements: Any Docker-capable recent Linux distro with Docker Engine and Docker Compose V2.
 
-![Docker-Compose NAS Homepage](https://github.com/AdrienPoupa/docker-compose-nas/assets/15086425/3492a9f6-3779-49a5-b052-4193844f16f0)
+![Docker-Compose NAS Homepage](https://thefinalsummer.com/wp-content/uploads/2024/07/screenshot-2024-07-17-203004.png "Homepage")
 
 ## Table of Contents
 
