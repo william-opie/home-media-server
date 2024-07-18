@@ -47,3 +47,27 @@ for container in $(docker ps --format '{{.Names}}'); do
     update_qbittorrent_config "$container"
   fi
 done
+
+# Below section updates etc-pihole/custom.list with the Tailscale IP, LAN IP, and domain entered in .env
+#First, verify the custom.list file exists; if not, copy the template over.
+if [ ! -f etc-pihole/custom.list ]; then
+  cp etc-pihole/custom.list.template etc-pihole/custom.list
+fi
+
+# Extract the values of TAILSCALE_IP, LAN_IP, and DOMAIN from the .env file
+TAILSCALE_IP=$(grep '^TAILSCALE_IP=' .env | cut -d '=' -f 2)
+LAN_IP=$(grep '^LAN_IP=' .env | cut -d '=' -f 2)
+DOMAIN=$(grep '^DOMAIN=' .env | cut -d '=' -f 2)
+
+# Check if TAILSCALE_IP, LAN_IP, and DOMAIN are set and non-empty
+if [ -n "$TAILSCALE_IP" ] && [ -n "$LAN_IP" ] && [ -n "$DOMAIN" ]; then
+  # Run the sed command to replace ${TAILSCALE_IP}, ${LAN_IP}, and ${DOMAIN} in etc-pihole/custom.list
+  sed -i.bak \
+    -e "s/\${TAILSCALE_IP}/$TAILSCALE_IP/g" \
+    -e "s/\${LAN_IP}/$LAN_IP/g" \
+    -e "s/\${DOMAIN}/$DOMAIN/g" \
+    etc-pihole/custom.list && rm etc-pihole/custom.list.bak
+else
+  echo "Error: One or more required variables (TAILSCALE_IP, LAN_IP, DOMAIN) are not set in the .env file."
+  exit 1
+fi
