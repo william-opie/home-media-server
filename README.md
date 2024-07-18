@@ -59,9 +59,13 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
 
 ## Quick Start
 
-`cp .env.example .env`, edit to your needs then `docker compose up -d`.
+Copy the .env template file using `cp .env.example .env`, and set the variable values.
+Next, run `sudo bash pihole-setup.sh` to complete the [Pihole setup commands](https://github.com/pi-hole/docker-pi-hole?tab=readme-ov-file#installing-on-ubuntu-or-fedora).
+Then, run `sudo docker compose up -d`.
 
-For the first time, run `./update-config.sh` to update the applications base URLs and set the API keys in `.env`.
+(Note: By default, Docker is only accessible with root privileges. If you want to [use Docker as a regular user](https://docs.docker.com/engine/install/linux-postinstall/), you need to add your user to the 'docker' group.)
+
+After running docker compose up for the first time, run `./update-config.sh` to update the applications base URLs and set the API keys in `.env`. This will also set the domain, LAN IP and TAILSCALE IP in etc-pihole/custom.list (setting your local DNS records in Pihole).
 
 If you want to see Jellyfin information on the homepage widget, create an API key in Jellyfin's Settings and enter the value for `JELLYFIN_API_KEY`.
 If you want to see Pihole information on the homepage widget, retrieve the Pihole API key from the admin dashboard and enter the value for `PIHOLE_API_KEY`.
