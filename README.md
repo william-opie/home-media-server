@@ -1,13 +1,16 @@
 # Docker Compose NAS
 This is a fork; see the original [docker-compose-nas project repo here](https://github.com/AdrienPoupa/docker-compose-nas). 
 
-Most of the README content comes from the original repo; I have made some edits to account for the changes I have made in this fork.
+Much of the README content below came from the original project; I have made edits for clarity and fork-specific changes.
 
 This is a simple Docker compose project used to create a media server on your home network.
 
-This fork differs from the original in that it uses Caddy as a reverse proxy (instead of Traefik),
-and Pihole is installed by default (instead of Adguard, which is an optional add-on in the original project).
-This fork also sets the *arr apps to use the VPN connection by default; this was an optional config in the original project.
+Differences between the original project and this fork:
+- This project uses Caddy as a reverse proxy (instead of Traefik)
+- Pihole is installed by default (for ad-blocking & local DNS record management)
+- This fork sets the *arr apps to use the VPN connection by default (this was an optional config in the original project)
+- Optional apps (Immich, Tandoor, Adguard, etc) from the original project have been removed (for simplicity). 
+- Minor homepage changes (set a background image, added a Pihole widget, & set widget units to imperial)
 
 Requirements: Any Docker-capable recent Linux distro with Docker Engine and Docker Compose V2.
 
@@ -27,6 +30,8 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
     * [Download Client](#download-client)
   * [Prowlarr](#prowlarr)
   * [qBittorrent](#qbittorrent)
+    * [IP Leak Check](#ip-leak-check)
+    * [VueTorrent Web UI](#vuetorrent-webui)
   * [Jellyfin](#jellyfin)
   * [Homepage](#homepage)
   * [Jellyseerr](#jellyseerr)
@@ -63,7 +68,7 @@ From the directory that you cloned the project into, copy the .env template file
 Next, if your host is running Ubuntu or Fedora, run `sudo bash pihole-setup.sh`. This alters the default DNS resolver settings [for compatibility with Pihole](https://github.com/pi-hole/docker-pi-hole?tab=readme-ov-file#installing-on-ubuntu-or-fedora).
 Then, run `sudo docker compose up -d` to start the media server containers.
 
-💡Note: By default, Docker is only accessible with root privileges. If you want to [use Docker as a regular user](https://docs.docker.com/engine/install/linux-postinstall/), you need to add your user to the 'docker' group.
+💡**Note:** By default, Docker is only accessible with root privileges. If you want to [use Docker as a regular user](https://docs.docker.com/engine/install/linux-postinstall/), you need to add your user to the 'docker' group.
 
 After running `docker compose up` for the first time, run `sudo bash update-config.sh` to update the applications' base URLs and set the API keys in `.env`. This will also set the domain, LAN IP and TAILSCALE IP in etc-pihole/custom.list (setting your local DNS records in Pihole).
 
@@ -123,32 +128,30 @@ If you want to see Pihole information on the homepage widget, retrieve the Pihol
 
 ## PIA WireGuard VPN
 
-I chose PIA since it supports WireGuard and [port forwarding](https://github.com/thrnz/docker-wireguard-pia/issues/26#issuecomment-868165281),
-but you could use other providers:
+[Private Interet Access](https://www.privateinternetaccess.com/buy-vpn-online) was chosen as the default VPN for this project because it supports WireGuard and [port forwarding](https://github.com/thrnz/docker-wireguard-pia/issues/26#issuecomment-868165281).
 
-- OpenVPN: [linuxserver/openvpn-as](https://hub.docker.com/r/linuxserver/openvpn-as)
-- WireGuard: [linuxserver/wireguard](https://hub.docker.com/r/linuxserver/wireguard)
-- NordVPN + OpenVPN: [bubuntux/nordvpn](https://hub.docker.com/r/bubuntux/nordvpn/dockerfile)
-- NordVPN + WireGuard (NordLynx): [bubuntux/nordlynx](https://hub.docker.com/r/bubuntux/nordlynx)
+Before starting the containers, update the `.env` file with your PIA credentials.
 
-For PIA + WireGuard, fill `.env` and fill it with your PIA credentials.
+By default, the VPN server location is set to `us_atlanta`. You can change this to another location within the `.env` file.
 
-The location of the server it will connect to is set to `LOC=us_atlanta`, defaulting to Atlanta, GA (USA).
+See the full list of PIA VPN locations here: https://serverlist.piaservers.net/vpninfo/servers/v6
 
-You need to fill the credentials in the `PIA_*` environment variables, 
-otherwise the VPN container will exit and qBittorrent will not start.
+(Note: "id" values in the PIA VPN location list correspond to the `.env` file's `PIA_LOCATION` value.)
+
+**You must set the credentials in the `PIA_*` environment variables, otherwise the VPN container will exit, and qBittorrent and the *Arr apps will not start.**
 
 ## Sonarr, Radarr & Lidarr
 
 ### File Structure
 
-Sonarr, Radarr, and Lidarr must be configured to support hardlinks, to allow instant moves and prevent using twice the storage
-(Bittorrent downloads and final file). The trick is to use a single volume shared by the Bittorrent client and the *arrs.
-Subfolders are used to separate the TV shows from the movies.
+Sonarr, Radarr, and Lidarr must be configured to support hardlinks. This allows file transfers from the torrent downloads folder to the media storage folder, preventing file duplication and excess storage consumption.
+This is achieved by using a single volume shared by the qBittorrent client and the *arr apps.
 
-The configuration is well explained by [this guide](https://trash-guides.info/Hardlinks/How-to-setup-for/Docker/).
+Subfolders are used to separate your TV shows, movies, and music files.
 
-In summary, the final structure of the shared volume will be as follows:
+This folder configuration is explained in detail by [this guide](https://trash-guides.info/Hardlinks/How-to-setup-for/Docker/).
+
+The structure of the shared volume is shown below:
 
 ```
 data
@@ -161,16 +164,19 @@ data
    └── music = Lidarr
 ```
 
-Go to Settings > Management.
-In Sonarr, set the Root folder to `/data/media/tv`.
-In Radarr, set the Root folder to `/data/media/movies`.
-In Lidarr, set the Root folder to `/data/media/music`.
+After updating your storage volume with this folder structure, follow the below steps to add the appropriate directory to each *Arr app.
+
+Within the *Arr app, go to Settings > Management.
+- In Sonarr, set the Root folder to `/data/media/tv`.
+- In Radarr, set the Root folder to `/data/media/movies`.
+- In Lidarr, set the Root folder to `/data/media/music`.
 
 ### Download Client
 
 Add qBittorrent as a download client by clicking Settings > Download Clients. Set the host for qBittorrent to `localhost` and the port to `8080`. 
 Input the username and password you set for qBittorrent, then click the Test button to confirm the connection is functioning properly. If you do not see any errors, click Save.
-💡Note: You will need to repeat this process for all of the *arr apps (Prowlarr, Sonarr, Radarr, and Lidarr).
+
+💡**Note:** You will need to repeat this process for all of the *arr apps (Prowlarr, Sonarr, Radarr, and Lidarr).
 
 ## Prowlarr
 
@@ -219,8 +225,11 @@ Otherwise, your IP address may be exposed when torrenting.
 
 ### IP Leak Check
 To confirm that the VPN setup ***is not*** leaking your personal IP address when torrenting, you can use https://ipleak.net/. Scroll to "Torrent Address Detection", click "Activate", then copy the Magnet link. 
+
 Next, add the Magnet link to qBittorrent. From qBittorrent, click the "Add Torrent Link" button in the upper left corner, then paste the link in the download from URLs or Magnet links field, then scroll down and click the Download button.
+
 ![Adding Magnet Link to qBittorrent](https://thefinalsummer.com/wp-content/uploads/2024/07/screenshot-2024-07-20-170521.png)
+
 Within ~10 seconds, ipleak.net will show the IP address used by qBittorrent. If everything is setup properly, your personal IP address should not be exposed. 
 
 After completing the test, right-click the download in qBittorrent, then click remove to delete it.
@@ -296,31 +305,6 @@ See [here](https://tailscale.com/kb/installation) for installation instructions.
 
 [Tailscale's documentation](https://tailscale.com/kb/1114/pi-hole) provides instructions for using your Pihole server when you're away from your LAN.
 
-
-## Customization
-
-You can override the configuration of a service or add new services by creating a new `docker-compose.override.yml` file,
-then appending it to the `COMPOSE_FILE` environment variable: `COMPOSE_FILE=docker-compose.yml:docker-compose.override.yml`
-
-[See official documentation](https://docs.docker.com/compose/extends).
-
-For example, use a [different VPN provider](https://github.com/bubuntux/nordvpn):
-
-```yml
-services:
-  vpn:
-    image: ghcr.io/bubuntux/nordvpn
-    cap_add:
-      - NET_ADMIN               # Required
-      - NET_RAW                 # Required
-    environment:                # Review https://github.com/bubuntux/nordvpn#environment-variables
-      - USER=user@email.com     # Required
-      - "PASS=pas$word"         # Required
-      - CONNECT=United_States
-      - TECHNOLOGY=NordLynx
-      - NETWORK=192.168.1.0/24  # So it can be accessed within the local network
-```
-
 ## Use Separate Paths for Torrents and Storage
 
 If you want to use separate paths for torrents download and long term storage, to use different disks for example,
@@ -340,6 +324,6 @@ services:
       - ${DOWNLOAD_ROOT}/movies:/data/torrents/movies
 ```
 
-Note you will lose the hard link ability, ie your files will be duplicated.
+💡**Note:** You will no longer be able to use hardlinks with this configuration, so your files will be duplicated between the torrent and media storage locations.
 
 In Sonarr and Radarr, go to `Settings` > `Importing` > Untick `Use Hardlinks instead of Copy`
