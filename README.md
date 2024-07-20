@@ -168,21 +168,33 @@ In Lidarr, set the Root folder to `/data/media/music`.
 
 ### Download Client
 
-Then qBittorrent can be configured at Settings > Download Clients. Because all the networking for qBittorrent takes
-place in the VPN container, the hostname for qBittorrent is the hostname of the VPN container, ie `vpn`, and the port is `8080`:
+Add qBittorrent as a download client by clicking Settings > Download Clients. Set the host for qBittorrent to `localhost` and the port to `8080`. 
+Input the username and password you set for qBittorrent, then click the Test button to confirm the connection is functioning properly. If you do not see any errors, click Save.
+💡Note: You will need to repeat this process for all of the *arr apps (Prowlarr, Sonarr, Radarr, and Lidarr).
 
 ## Prowlarr
 
-The indexers are configured through Prowlarr. They synchronize automatically to Radarr and Sonarr.
+Indexers for all of the *arr apps are configured and managed through Prowlarr. Indexers added to Prowlarr synchronize automatically to the other *arr apps, providing a one-stop location for indexer management.
 
-Radarr and Sonarr may then be added via Settings > Apps. The Prowlarr server is `http://localhost:9696/prowlarr`, the Radarr server
-is `http://localhost:7878/radarr` Sonarr `http://localhost:8989/sonarr`, and Lidarr `http://localhost:8686/lidarr`.
+To sync indexers to Radarr, Sonarr and Lidarr, you must first add them as apps in Prowlarr. From Prowlarr, click Settings > Apps. Then click the respective *arr app.
 
-Their API keys can be found in Settings > Security > API Key.
+The Prowlarr server is `http://localhost:9696/prowlarr`.
+The Radarr server is `http://localhost:7878/radarr`.
+The Sonarr server is `http://localhost:8989/sonarr`.
+The Lidarr server is `http://localhost:8686/lidarr`.
+
+API keys for each individual *arr app can be found within Settings > Security > API Key (from the respective *arr app's web portal; ex. to get the API key for Sonarr, go to sonarr.<your-domain>, then click Settings > Security > API Key).
+Alternatively, you can find the API keys for the *arr apps with your `.env` file (assuming you ran the `update-config.sh` script).
+
+See example screenshot below showing how Radarr is configured as an app within Prowlarr:
+![Prowlarr-Radarr App Config](https://thefinalsummer.com/wp-content/uploads/2024/07/screenshot-2024-07-20-164728.png "Radarr App Config")
+
 
 ## qBittorrent
 
-Running `update-config.sh` will set qBittorrent's password to `adminadmin`. If you wish to update the password manually,
+Running `update-config.sh` will set qBittorrent's password to `adminadmin` (or whatever value you set for `QBITTORRENT_PASSWORD` in the .env file).
+
+If you want to set the qBittorrent password without using the `update-config.sh` script,
 since qBittorrent v4.6.2, a temporary password is generated on startup. Get it with `docker compose logs qbittorrent`:
 ```
 The WebUI administrator username is: admin
@@ -200,9 +212,20 @@ The login page can be disabled on for the local network in by enabling `Bypass a
 172.17.0.0/16
 ```
 
-Set the default save path to `/data/torrents` in Settings, and restrict the network interface to WireGuard (`wg0`).
+Set the default save path to `/data/torrents` in Settings, and restrict the network interface to WireGuard (`wg0`). **Make sure to restrict the network interface to WireGuard!** 
+Otherwise, your IP address may be exposed when torrenting.
 
-To use the VueTorrent WebUI just go to `qBittorrent`, `Options`, `Web UI`, `Use Alternative WebUI`, and enter `/vuetorrent`. Special thanks to gabe565 for the easy enablement with (https://github.com/gabe565/linuxserver-mod-vuetorrent).
+### IP Leak Check
+To confirm that the VPN setup ***is not*** leaking your personal IP address when torrenting, you can use https://ipleak.net/. Scroll to "Torrent Address Detection", click "Activate", then copy the Magnet link. 
+Next, add the Magnet link to qBittorrent. From qBittorrent, click the "Add Torrent Link" button in the upper left corner, then paste the link in the download from URLs or Magnet links field, then scroll down and click the Download button.
+![Adding Magnet Link to qBittorrent](https://thefinalsummer.com/wp-content/uploads/2024/07/screenshot-2024-07-20-170521.png)
+Within ~10 seconds, ipleak.net will show the IP address used by qBittorrent. If everything is setup properly, your personal IP address should not be exposed. 
+
+After completing the test, right-click the download in qBittorrent, then click remove to delete it.
+
+### VueTorrent WebUI
+
+To use the VueTorrent WebUI, go to `qBittorrent`, `Options`, `Web UI`, `Use Alternative WebUI`, and enter `/vuetorrent`. Special thanks to gabe565 for the easy enablement with (https://github.com/gabe565/linuxserver-mod-vuetorrent).
 
 ## Jellyfin
 
