@@ -178,10 +178,12 @@ Indexers for all of the *arr apps are configured and managed through Prowlarr. I
 
 To sync indexers to Radarr, Sonarr and Lidarr, you must first add them as apps in Prowlarr. From Prowlarr, click Settings > Apps. Then click the respective *arr app.
 
-The Prowlarr server is `http://localhost:9696/prowlarr`.
-The Radarr server is `http://localhost:7878/radarr`.
-The Sonarr server is `http://localhost:8989/sonarr`.
-The Lidarr server is `http://localhost:8686/lidarr`.
+| *Arr App | Server URL                      |
+|----------|---------------------------------|
+| Prowlarr | `http://localhost:9696/prowlarr`|
+| Radarr   | `http://localhost:7878/radarr`  |
+| Sonarr   | `http://localhost:8989/sonarr`  |
+| Lidarr   | `http://localhost:8686/lidarr`  |
 
 API keys for each individual *arr app can be found within Settings > Security > API Key (from the respective *arr app's web portal; ex. to get the API key for Sonarr, go to sonarr.<your-domain>, then click Settings > Security > API Key).
 Alternatively, you can find the API keys for the *arr apps with your `.env` file (assuming you ran the `update-config.sh` script).
