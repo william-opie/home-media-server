@@ -1,4 +1,4 @@
 @sonarr host sonarr.{env.DOMAIN}
 handle @sonarr {
-    reverse_proxy http://sonarr:8989
+    reverse_proxy http://vpn:8989
 }

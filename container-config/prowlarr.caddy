@@ -1,4 +1,4 @@
 @prowlarr host prowlarr.{env.DOMAIN}
 handle @prowlarr {
-    reverse_proxy http://prowlarr:9696
+    reverse_proxy http://vpn:9696
 }

@@ -31,9 +31,6 @@ services:
       - homepage.widget.key=${PIHOLE_API_KEY}
       # Following label disables watchtower from applying automatic updates to pihole container
       - com.centurylinklabs.watchtower.enable=false
-    networks:
-      - homepage
-      - default
 
   jellyfin:
     container_name: jellyfin
@@ -64,8 +61,6 @@ services:
   sonarr:
     image: lscr.io/linuxserver/sonarr
     container_name: sonarr
-    depends_on:
-      - qbittorrent
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
@@ -75,9 +70,15 @@ services:
       - ${DATA_ROOT}:/data
     restart: always
     healthcheck:
-      test: [ "CMD", "curl", "--fail", "http://127.0.0.1:8989/sonarr/ping" ]
+      test: [ "CMD", "curl", "--fail", "http://127.0.0.1:8989/sonarr/ping", "https://google.com" ]
       interval: 30s
       retries: 10
+    network_mode: "service:vpn"
+    depends_on:
+      qbittorrent:
+        condition: service_started
+      vpn:
+        condition: service_healthy
     labels:
       - homepage.group=Media
       - homepage.name=Sonarr
@@ -86,14 +87,12 @@ services:
       - homepage.description=Series management
       - homepage.weight=0
       - homepage.widget.type=sonarr
-      - homepage.widget.url=http://sonarr:8989/sonarr
+      - homepage.widget.url=http://vpn:8989/sonarr
       - homepage.widget.key=${SONARR_API_KEY}
 
   radarr:
     image: lscr.io/linuxserver/radarr
     container_name: radarr
-    depends_on:
-      - qbittorrent
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
@@ -103,9 +102,15 @@ services:
       - ${DATA_ROOT}:/data
     restart: always
     healthcheck:
-      test: [ "CMD", "curl", "--fail", "http://127.0.0.1:7878/radarr/ping" ]
+      test: [ "CMD", "curl", "--fail", "http://127.0.0.1:7878/radarr/ping", "https://google.com" ]
       interval: 30s
       retries: 10
+    network_mode: "service:vpn"
+    depends_on:
+      qbittorrent:
+        condition: service_started
+      vpn:
+        condition: service_healthy
     labels:
       - homepage.group=Media
       - homepage.name=Radarr
@@ -114,14 +119,12 @@ services:
       - homepage.description=Movies management
       - homepage.weight=1
       - homepage.widget.type=radarr
-      - homepage.widget.url=http://radarr:7878/radarr
+      - homepage.widget.url=http://vpn:7878/radarr
       - homepage.widget.key=${RADARR_API_KEY}
 
   lidarr:
     image: lscr.io/linuxserver/lidarr
     container_name: lidarr
-    depends_on:
-      - qbittorrent
     environment:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
@@ -131,9 +134,15 @@ services:
       - ${DATA_ROOT}:/data
     restart: always
     healthcheck:
-      test: [ "CMD", "curl", "--fail", "http://127.0.0.1:8686/lidarr/ping" ]
+      test: [ "CMD", "curl", "--fail", "http://127.0.0.1:8686/lidarr/ping", "https://google.com" ]
       interval: 30s
       retries: 10
+    network_mode: "service:vpn"
+    depends_on:
+      qbittorrent:
+        condition: service_started
+      vpn:
+        condition: service_healthy
     labels:
       - homepage.group=Media
       - homepage.name=Lidarr
@@ -142,7 +151,7 @@ services:
       - homepage.description=Music management
       - homepage.weight=2
       - homepage.widget.type=lidarr
-      - homepage.widget.url=http://lidarr:8686/lidarr
+      - homepage.widget.url=http://vpn:8686/lidarr
       - homepage.widget.key=${LIDARR_API_KEY}
 
   bazarr:
@@ -157,9 +166,15 @@ services:
       - ${DATA_ROOT}:/data
     restart: always
     healthcheck:
-      test: [ "CMD", "curl", "--fail", "http://127.0.0.1:6767/bazarr/ping" ]
+      test: [ "CMD", "curl", "--fail", "http://127.0.0.1:6767/bazarr/ping", "https://google.com" ]
       interval: 5s
       retries: 10
+    network_mode: "service:vpn"
+    depends_on:
+      qbittorrent:
+        condition: service_started
+      vpn:
+        condition: service_healthy
     labels:
       - homepage.group=Download
       - homepage.name=Bazarr
@@ -168,7 +183,7 @@ services:
       - homepage.description=Subtitles management
       - homepage.weight=4
       - homepage.widget.type=bazarr
-      - homepage.widget.url=http://bazarr:6767/bazarr
+      - homepage.widget.url=http://vpn:6767/bazarr
       - homepage.widget.key=${BAZARR_API_KEY}
 
   jellyseerr:
@@ -206,9 +221,15 @@ services:
       - ${CONFIG_ROOT:-.}/prowlarr:/config
     restart: always
     healthcheck:
-      test: [ "CMD", "curl", "--fail", "http://127.0.0.1:9696/prowlarr/ping" ]
+      test: [ "CMD", "curl", "--fail", "http://127.0.0.1:9696/prowlarr/ping", "https://google.com" ]
       interval: 30s
       retries: 10
+    network_mode: "service:vpn"
+    depends_on:
+      qbittorrent:
+        condition: service_started
+      vpn:
+        condition: service_healthy
     labels:
       - homepage.group=Download
       - homepage.name=Prowlarr
@@ -217,13 +238,19 @@ services:
       - homepage.description=Indexers management
       - homepage.weight=1
       - homepage.widget.type=prowlarr
-      - homepage.widget.url=http://prowlarr:9696/prowlarr
+      - homepage.widget.url=http://vpn:9696/prowlarr
       - homepage.widget.key=${PROWLARR_API_KEY}
 
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
     container_name: flaresolverr
     restart: always
+    network_mode: "service:vpn"
+    depends_on:
+      qbittorrent:
+        condition: service_started
+      vpn:
+        condition: service_healthy
     environment:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - LOG_HTML=${LOG_HTML:-false}
@@ -331,10 +358,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${DATA_ROOT}:/data
     restart: always
+    depends_on:
+      qbittorrent:
+        condition: service_started
     command: [sh, -c, "cp -n /app/config/tpl/*.yaml /app/config && node server.js"]
-    networks:
-      - homepage
-      - default
 
   caddy:
     image: slothcroissant/caddy-cloudflaredns:latest
@@ -354,6 +381,9 @@ services:
       - ./container-data/data:/data
       - ./container-config:/etc/caddy
       - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      homepage:
+        condition: service_started
   
   watchtower:
     image: containrrr/watchtower
@@ -376,5 +406,4 @@ services:
 
 networks:
   default:
-  homepage:
-    external: true
+    name: docker-compose-nas

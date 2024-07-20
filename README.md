@@ -7,6 +7,7 @@ This is a simple Docker compose project used to create a media server on your ho
 
 This fork differs from the original in that it uses Caddy as a reverse proxy (instead of Traefik),
 and Pihole is installed by default (instead of Adguard, which is an optional add-on in the original project).
+This fork also sets the *arr apps to use the VPN connection by default; this was an optional config in the original project.
 
 Requirements: Any Docker-capable recent Linux distro with Docker Engine and Docker Compose V2.
 
@@ -34,7 +35,6 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
     * [Accessing from the outside with Tailscale](#accessing-from-the-outside-with-tailscale)
     * [Expose DNS Server with Tailscale](#expose-dns-server-with-tailscale)
   * [Customization](#customization)
-    * [Optional: Using the VPN for *arr apps](#optional-using-the-vpn-for-arr-apps)
 <!-- TOC -->
 
 ## Applications
@@ -59,13 +59,13 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
 
 ## Quick Start
 
-Copy the .env template file using `cp .env.example .env`, and set the variable values.
-Next, run `sudo bash pihole-setup.sh` to complete the [Pihole setup commands](https://github.com/pi-hole/docker-pi-hole?tab=readme-ov-file#installing-on-ubuntu-or-fedora).
-Then, run `sudo docker compose up -d`.
+From the directory that you cloned the project into, copy the .env template file using `cp .env.example .env`, and set the variable values.
+Next, if your host is running Ubuntu or Fedora, run `sudo bash pihole-setup.sh`. This alters the default DNS resolver settings [for compatibility with Pihole](https://github.com/pi-hole/docker-pi-hole?tab=readme-ov-file#installing-on-ubuntu-or-fedora).
+Then, run `sudo docker compose up -d` to start the media server containers.
 
-(Note: By default, Docker is only accessible with root privileges. If you want to [use Docker as a regular user](https://docs.docker.com/engine/install/linux-postinstall/), you need to add your user to the 'docker' group.)
+💡Note: By default, Docker is only accessible with root privileges. If you want to [use Docker as a regular user](https://docs.docker.com/engine/install/linux-postinstall/), you need to add your user to the 'docker' group.
 
-After running docker compose up for the first time, run `./update-config.sh` to update the applications base URLs and set the API keys in `.env`. This will also set the domain, LAN IP and TAILSCALE IP in etc-pihole/custom.list (setting your local DNS records in Pihole).
+After running `docker compose up` for the first time, run `sudo bash update-config.sh` to update the applications' base URLs and set the API keys in `.env`. This will also set the domain, LAN IP and TAILSCALE IP in etc-pihole/custom.list (setting your local DNS records in Pihole).
 
 If you want to see Jellyfin information on the homepage widget, create an API key in Jellyfin's Settings and enter the value for `JELLYFIN_API_KEY`.
 If you want to see Pihole information on the homepage widget, retrieve the Pihole API key from the admin dashboard and enter the value for `PIHOLE_API_KEY`.
@@ -175,8 +175,8 @@ place in the VPN container, the hostname for qBittorrent is the hostname of the 
 
 The indexers are configured through Prowlarr. They synchronize automatically to Radarr and Sonarr.
 
-Radarr and Sonarr may then be added via Settings > Apps. The Prowlarr server is `http://prowlarr:9696/prowlarr`, the Radarr server
-is `http://radarr:7878/radarr` Sonarr `http://sonarr:8989/sonarr`, and Lidarr `http://lidarr:8686/lidarr`.
+Radarr and Sonarr may then be added via Settings > Apps. The Prowlarr server is `http://localhost:9696/prowlarr`, the Radarr server
+is `http://localhost:7878/radarr` Sonarr `http://localhost:8989/sonarr`, and Lidarr `http://localhost:8686/lidarr`.
 
 Their API keys can be found in Settings > Security > API Key.
 
@@ -234,17 +234,17 @@ Jellyseer gives you content recommendations, allows others to make requests to y
 To setup, go to https://hostname/jellyseerr/setup, and set the URLs as follows:
 - Jellyfin: http://jellyfin:8096/jellyfin
 - Radarr:
-  - Hostname: radarr
+  - Hostname: vpn
   - Port: 7878
   - URL Base: /radarr
 - Sonarr
-  - Hostname: sonarr
+  - Hostname: vpn
   - Port: 8989
   - URL Base: /sonarr
 
 ## FlareSolverr
 
-In Prowlarr, add the FlareSolverr indexer with the URL http://flaresolverr:8191/
+In Prowlarr, add the FlareSolverr indexer with the URL http://127.0.0.1:8191/
 
 ## Caddy and SSL Certificates
 
@@ -295,22 +295,6 @@ services:
       - TECHNOLOGY=NordLynx
       - NETWORK=192.168.1.0/24  # So it can be accessed within the local network
 ```
-
-### Optional: Using the VPN for *arr apps
-
-If you want to use the VPN for Prowlarr and other *arr applications, add the following block to all the desired containers:
-```yml
-    network_mode: "service:vpn"
-    depends_on:
-      vpn:
-        condition: service_healthy
-```
-
-Change the healthcheck to mark the containers as unhealthy when internet connection is not working by appending a URL
-to the healthcheck, eg: `test: [ "CMD", "curl", "--fail", "http://127.0.0.1:7878/radarr/ping", "https://google.com" ]`
-
-Then in Prowlarr, use `localhost` rather than `vpn` as the hostname, since they are on the same network.
-
 
 ## Use Separate Paths for Torrents and Storage
 

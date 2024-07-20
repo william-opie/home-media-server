@@ -1,4 +1,4 @@
 @bazarr host bazarr.{env.DOMAIN}
 handle @bazarr {
-    reverse_proxy http://bazarr:6767
+    reverse_proxy http://vpn:6767
 }
