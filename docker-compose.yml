@@ -337,9 +337,10 @@ services:
       - UN_SONARR_0_API_KEY=${SONARR_API_KEY}
       - UN_RADARR_0_URL=http://vpn:7878/radarr
       - UN_RADARR_0_API_KEY=${RADARR_API_KEY}
+      - UN_LIDARR_0_URL=http://vpn:8686/lidarr
+      - UN_LIDARR_0_API_KEY=${LIDARR_API_KEY}
     security_opt:
       - no-new-privileges:true
-
 
   homepage:
     image: ghcr.io/gethomepage/homepage:latest
