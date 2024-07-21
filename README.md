@@ -200,7 +200,13 @@ See example screenshot below showing how Radarr is configured as an app within P
 
 ## qBittorrent
 
-Running `update-config.sh` will set qBittorrent's password to `adminadmin` (or whatever value you set for `QBITTORRENT_PASSWORD` in the .env file).
+Running `update-config.sh` will set qBittorrent's username to `admin` and password to `adminadmin` 
+
+⚠️**Note:** `update-config.sh` will set the above credentials for qBittorrent **regardless** of the values you have set for `QBITTORRENT_USERNAME` and `QBITTORRENT_PASSWORD` in the .env file. Subsequent runs of `update-config.sh` will reset the credentials to username: `admin`, password: `adminadmin`. This is useful if you forget your qBittorrent Web UI credentials.
+
+Use these credentials to access qBittorrent's Web UI, then go to Settings > Web UI and set your own username and password. 
+
+After setting your own username and password for qBittorrent, update the credentials in the `.env` file for `QBITTORRENT_USERNAME` and `QBITTORRENT_PASSWORD`.
 
 If you want to set the qBittorrent password without using the `update-config.sh` script,
 since qBittorrent v4.6.2, a temporary password is generated on startup. Get it with `docker compose logs qbittorrent`:
@@ -208,9 +214,6 @@ since qBittorrent v4.6.2, a temporary password is generated on startup. Get it w
 The WebUI administrator username is: admin
 The WebUI administrator password was not set. A temporary password is provided for this session: <some_password>
 ```
-
-Use this password to access the UI, then go to Settings > Web UI and set your own password, 
-then set it in `.env`'s `QBITTORRENT_PASSWORD` variable.
 
 The login page can be disabled on for the local network in by enabling `Bypass authentication for clients`.
 
