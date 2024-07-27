@@ -6,3 +6,8 @@ sleep 3s
 sudo sh -c 'rm /etc/resolv.conf && ln -s /run/systemd/resolve/resolv.conf /etc/resolv.conf'
 sleep 3s
 sudo systemctl restart systemd-resolved
+
+# Verify the custom.list file exists; if not, copy the template over.
+if [ ! -f etc-pihole/custom.list ]; then
+  cp etc-pihole/custom.list.template etc-pihole/custom.list
+fi
