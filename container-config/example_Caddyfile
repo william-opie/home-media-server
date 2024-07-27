@@ -18,7 +18,7 @@
 }
 
 https://*.{env.DOMAIN} {
-    tls <cloudflare_email_goes_here> {
+    tls ${CLOUDFLARE_EMAIL} {
         dns cloudflare {env.CLOUDFLARE_API_TOKEN}
     }
     import *.caddy

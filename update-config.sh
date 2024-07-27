@@ -49,18 +49,12 @@ for container in $(docker ps --format '{{.Names}}'); do
   fi
 done
 
-# Below section updates etc-pihole/custom.list with the Tailscale IP, LAN IP, and domain entered in .env
-#First, verify the custom.list file exists; if not, copy the template over.
-if [ ! -f etc-pihole/custom.list ]; then
-  cp etc-pihole/custom.list.template etc-pihole/custom.list
-fi
-
 # Extract the values of TAILSCALE_IP, LAN_IP, and DOMAIN from the .env file
 TAILSCALE_IP=$(grep '^TAILSCALE_IP=' .env | cut -d '=' -f 2)
 LAN_IP=$(grep '^LAN_IP=' .env | cut -d '=' -f 2)
 DOMAIN=$(grep '^DOMAIN=' .env | cut -d '=' -f 2)
 
-# Check if TAILSCALE_IP, LAN_IP, and DOMAIN are set and non-empty
+# Check if TAILSCALE_IP, LAN_IP, and DOMAIN are set in .env file
 if [ -n "$TAILSCALE_IP" ] && [ -n "$LAN_IP" ] && [ -n "$DOMAIN" ]; then
   # Run the sed command to replace ${TAILSCALE_IP}, ${LAN_IP}, and ${DOMAIN} in etc-pihole/custom.list
   sed -i.bak \
@@ -68,7 +62,28 @@ if [ -n "$TAILSCALE_IP" ] && [ -n "$LAN_IP" ] && [ -n "$DOMAIN" ]; then
     -e "s/\${LAN_IP}/$LAN_IP/g" \
     -e "s/\${DOMAIN}/$DOMAIN/g" \
     etc-pihole/custom.list && rm etc-pihole/custom.list.bak
+    docker compose restart pihole
 else
   echo "Error: One or more required variables (TAILSCALE_IP, LAN_IP, DOMAIN) are not set in the .env file."
   exit 1
 fi
+
+# Creates Caddyfile from example_Caddyfile if file does not already exist
+if [ ! -f container-config/Caddyfile ]; then
+  cp container-config/example_Caddyfile container-config/Caddyfile
+fi
+
+# Inserts CLOUDFLARE_EMAIL from .env file in Caddyfile
+CLOUDFLARE_EMAIL=$(grep '^CLOUDFLARE_EMAIL=' .env | cut -d '=' -f 2)
+if [ -n "$CLOUDFLARE_EMAIL" ]; then
+  sed -i.bak \
+    -e "s/\${CLOUDFLARE_EMAIL}/$CLOUDFLARE_EMAIL/g" \
+    container-config/Caddyfile && rm container-config/Caddyfile.bak
+    docker compose restart caddy
+else
+  echo "Error: CLOUDFLARE_EMAIL variable not set in .env file."
+  exit 1
+fi
+
+# Restarts full container stack
+docker compose down && sleep 3 && docker compose up -d
