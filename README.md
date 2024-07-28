@@ -23,6 +23,7 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
   * [Table of Contents](#table-of-contents)
   * [Applications](#applications)
   * [Quick Start](#quick-start)
+    * [Homepage Widgets](#homepage-widgets)
   * [Environment Variables](#environment-variables)
   * [PIA WireGuard VPN](#pia-wireguard-vpn)
   * [Sonarr, Radarr & Lidarr](#sonarr-radarr--lidarr)
@@ -63,17 +64,41 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
 | [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr)       | Proxy server to bypass Cloudflare protection in Prowlarr<br/>                                                                                        | [flaresolverr/flaresolverr](https://hub.docker.com/r/flaresolverr/flaresolverr)                  |               |
 
 ## Quick Start
+💡**Note**: This quick start guide assumes the following:
+- You have [mounted your media storage drive](https://www.wikihow.com/Linux-How-to-Mount-Drive) on your server already. Make sure you've done this (and set the path for this media storage in the `.env` file) *before* starting the containers. 
+  - See [File Structure](#file-structure) below for information on setting up folders/directories on your media storage.
+- Your server has a static DHCP lease on your LAN. (Check your router's documentation if you're not sure how to do this.)
+- You will set your media server's IP address as the primary DNS server on your LAN. 
+  - I recommend setting Cloudflare (1.1.1.1), Quad9 (9.9.9.9), or OpenDNS (208.67.222.222) as a secondary DNS server so that you can still access the Internet if your Pihole container goes down.
+- You have purchased a domain name and [linked it to Cloudflare](https://developers.cloudflare.com/fundamentals/setup/manage-domains/add-site/#1--add-site-in-cloudflare), and you have [generated a DNS Zone Edit API key](https://blog.gurucomputing.com.au/Reverse%20Proxies%20with%20Caddy/Adding%20Acme%20Certification/#api-keys).
+- You are using [Private Internet Access](https://www.privateinternetaccess.com/buy-vpn-online) as your VPN (see [PIA section below](#pia-wireguard-vpn)).
+- You have [created a Tailscale account](https://tailscale.com/kb/1017/install) and [installed Tailscale](https://tailscale.com/kb/1031/install-linux) on your server (and any other devices you want to access your server from when you are away from your LAN; see [Accessing from the outside with Tailscale](#accessing-from-the-outside-with-tailscale) for more info).
 
-From the directory that you cloned the project into, copy the .env template file using `cp .env.example .env`, and set the variable values.
-Next, if your host is running Ubuntu or Fedora, run `sudo bash pihole-setup.sh`. This alters the default DNS resolver settings [for compatibility with Pihole](https://github.com/pi-hole/docker-pi-hole?tab=readme-ov-file#installing-on-ubuntu-or-fedora).
+First, clone this project onto your server using `git clone https://github.com/willam-opie/docker-compose-nas`.
+
+From the directory that you cloned the project into, copy the .env template file using `cp .env.example .env`, and set the variable values. See the [Environment Variables](#environment-variables) table below for more information.
+
+Next, if your host is running Ubuntu or Fedora, run `sudo bash pihole-setup.sh`. This alters the default DNS resolver settings [for compatibility with Pihole](https://github.com/pi-hole/docker-pi-hole?tab=readme-ov-file#installing-on-ubuntu-or-fedora) and copies custom.list.template to custom.list (within the etc-pihole directory).
 Then, run `sudo docker compose up -d` to start the media server containers.
 
 💡**Note:** By default, Docker is only accessible with root privileges. If you want to [use Docker as a regular user](https://docs.docker.com/engine/install/linux-postinstall/), you need to add your user to the 'docker' group.
 
-After running `docker compose up` for the first time, run `sudo bash update-config.sh` to update the applications' base URLs and set the API keys in `.env`. This will also set the domain, LAN IP and TAILSCALE IP in etc-pihole/custom.list (setting your local DNS records in Pihole).
+After running `docker compose up -d` for the first time, run `sudo bash update-config.sh`. This script handles the following steps:
+- Updates the applications' base URLs and sets the API keys in `.env`. 
+- Sets the domain, LAN IP and TAILSCALE IP in etc-pihole/custom.list (creating your local DNS records in Pihole).
+- Sets the qBittorrent admin credentials (username: `admin`; password: `adminadmin`)
+- Creates Caddyfile (from the template example_Caddyfile) within the container-config directory. Also swaps in the $CLOUDFLARE_EMAIL variable within Caddyfile.
+- Restarts the entire docker compose stack at the end of the script.
 
-If you want to see Jellyfin information on the homepage widget, create an API key in Jellyfin's Settings and enter the value for `JELLYFIN_API_KEY`.
-If you want to see Pihole information on the homepage widget, retrieve the Pihole API key from the admin dashboard and enter the value for `PIHOLE_API_KEY`.
+⚠️ **Note:** The first startup may take several minutes to complete. *Be patient.*
+
+### Homepage Widgets
+The `update-config.sh` script inserts the API key values for the \*Arr apps in the `.env` file automatically. Unfortunately, this script *does not* set the API key variables for Jellyfin, Jellyseerr, or Pihole in the `.env` file. If you want the homepage widgets for these apps to display information for these apps, you will need to add their API keys to the `.env` file manually.
+
+Steps for getting the API keys for these apps are listed below:
+- **Jellyfin**: Click the hamburger menu in the upper left corner, then click "Dashboard". Next, scroll down on the left sidebar and click "API Keys" (in the "Advanced" section.) Press the + icon to generate a new API Key, then copy and paste this API Key value in the `.env` file for `JELLYFIN_API_KEY`.
+- **Pihole**: Sign-in to the Pihole admin dashboard (make sure to set an admin password for Pihole in the `.env` file), then click "Settings" from the left sidebar. Next, click the "API" tab. On the API tab, click the "Show API token" button. Then click "Yes, show API token", and copy the value listed below "Raw API Token". Paste this API Key value in the `.env` file for `PIHOLE_API_KEY`.
+- **Jellyseerr**: After completing the Jellyseerr initial config (scroll to [Jellyseer](#jellyseerr) for config steps), click the "Settings" button on the left sidebar. The API Key will appear on the "General" tab. Copy the API Key value and paste it in the `.env` file for `JELLYSEERR_API_KEY`.
 
 ## Environment Variables
 
@@ -252,8 +277,7 @@ devices:
   - /dev/dri/card0:/dev/dri/card0
 ```
 
-Generally, running Docker on Linux you will want to use VA-API, but the exact mount paths may differ depending on your
-hardware.
+Generally, running Docker on Linux you will want to use VA-API, but the exact mount paths may differ depending on your hardware.
 
 ## Homepage
 
@@ -268,7 +292,7 @@ The files in `/homepage/tpl/*.yaml` only serve as a base to set up the homepage 
 
 Jellyseer gives you content recommendations, allows others to make requests to you, and allows logging in with Jellyfin credentials.
 
-To setup, go to https://hostname/jellyseerr/setup, and set the URLs as follows:
+To setup, go to https://jellyseer.<your-domain-here>/setup, and set the URLs as follows:
 - Jellyfin: http://jellyfin:8096/jellyfin
 - Radarr:
   - Hostname: vpn
@@ -291,8 +315,7 @@ with a valid SSL certificate?
 Caddy makes this easy by using Let's Encrypt and a
 [supported ACME challenge provider](https://caddy.community/t/how-to-use-dns-provider-modules-in-caddy-2/8148). For simplicity, this project uses Cloudflare.
 
-Set the CloudFlare `.env` values, and make sure to enter your Cloudflare account email address on the base Caddyfile. (Note: You will need to rename 
-the `example_Caddyfile` file to `Caddyfile` for Caddy to function properly).
+Set the CloudFlare `.env` values, and make sure your Cloudflare account email address is set within the base Caddyfile.
 
 ### Accessing from the outside with Tailscale
 
