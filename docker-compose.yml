@@ -31,6 +31,8 @@ services:
       - homepage.widget.key=${PIHOLE_API_KEY}
       # Following label disables watchtower from applying automatic updates to pihole container
       - com.centurylinklabs.watchtower.enable=false
+    profiles:
+      - pihole
 
   jellyfin:
     container_name: jellyfin
@@ -241,6 +243,41 @@ services:
       - homepage.widget.url=http://vpn:9696/prowlarr
       - homepage.widget.key=${PROWLARR_API_KEY}
 
+  readarr:
+    #only nightly and developer builds are currently available for Readarr
+    image: lscr.io/linuxserver/readarr:nightly
+    container_name: readarr
+    environment:
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${CONFIG_ROOT:-.}/readarr:/config
+      - ${DATA_ROOT}:/data
+    restart: always
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://127.0.0.1:8787/readarr/ping", "https://google.com" ]
+      interval: 30s
+      retries: 10
+    network_mode: "service:vpn"
+    depends_on:
+      qbittorrent:
+        condition: service_started
+      vpn:
+        condition: service_healthy
+    labels:
+      - homepage.group=Download
+      - homepage.name=readarr
+      - homepage.icon=readarr.png
+      - homepage.href=${READARR_URL}
+      - homepage.description=Book management
+      - homepage.weight=1
+      - homepage.widget.type=readarr
+      - homepage.widget.url=http://vpn:8787/readarr
+      - homepage.widget.key=${READARR_API_KEY}
+    profiles:
+      - readarr
+
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
     container_name: flaresolverr
@@ -339,6 +376,8 @@ services:
       - UN_RADARR_0_API_KEY=${RADARR_API_KEY}
       - UN_LIDARR_0_URL=http://vpn:8686/lidarr
       - UN_LIDARR_0_API_KEY=${LIDARR_API_KEY}
+      - UN_READARR_0_URL=http://vpn:8787/radarr
+      - UN_READARR_0_API_KEY=${READARR_API_KEY}
     security_opt:
       - no-new-privileges:true
 

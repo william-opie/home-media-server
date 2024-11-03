@@ -1,16 +1,15 @@
 # Docker Compose NAS
-This is a fork; see the original [docker-compose-nas project repo here](https://github.com/AdrienPoupa/docker-compose-nas). 
-
-Much of the README content below came from the original project; I have made edits for clarity and fork-specific changes.
+**NOTE: This is a fork; please see the original [docker-compose-nas project repo here](https://github.com/AdrienPoupa/docker-compose-nas).**
 
 This is a simple Docker compose project used to create a media server on your home network.
 
 Differences between the original project and this fork:
-- This project uses Caddy as a reverse proxy (instead of Traefik)
-- Pihole is installed by default (for ad-blocking & local DNS record management)
-- This fork sets the *arr apps to use the VPN connection by default (this was an optional config in the original project)
-- Optional apps (Immich, Tandoor, Adguard, etc) from the original project have been removed (for simplicity). 
-- Minor homepage changes (set a background image, added a Pihole widget, & set widget units to imperial)
+* This project uses Caddy as a reverse proxy (instead of Traefik)
+* Pihole is installed by default (for ad-blocking & local DNS record management)
+  * Note: If you do not want to use Pihole, simply remove `pihole` from the `COMPOSE_PROFILES` list within the .env file.
+* This fork sets all *arr apps to use the VPN connection by default
+* Readarr has been added as an optional *arr app.
+* Minor homepage changes (set a background image, added a Pihole widget, & set widget units to imperial)
 
 Requirements: Any Docker-capable recent Linux distro with Docker Engine and Docker Compose V2.
 
@@ -26,9 +25,10 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
     * [Homepage Widgets](#homepage-widgets)
   * [Environment Variables](#environment-variables)
   * [PIA WireGuard VPN](#pia-wireguard-vpn)
-  * [Sonarr, Radarr & Lidarr](#sonarr-radarr--lidarr)
+  * [Sonarr, Radarr, Lidarr & Readarr](#sonarr-radarr-lidarr--readarr)
     * [File Structure](#file-structure)
     * [Download Client](#download-client)
+    * [Readarr](#readarr)
   * [Prowlarr](#prowlarr)
   * [qBittorrent](#qbittorrent)
     * [IP Leak Check](#ip-leak-check)
@@ -47,6 +47,7 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
 
 | **Application**                                                    | **Description**                                                                                                                                      | **Image**                                                                                        | **SUBDOMAIN** |
 |--------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|---------------|
+| [Pihole](https://docs.pi-hole.net/)                                | A DNS sinkhole that protects your devices from unwanted content. (Adblocker & DNS server for your LAN.)                                              | [pihole/pihole](https://hub.docker.com/r/pihole/pihole)                                          | pihole.       |
 | [Sonarr](https://sonarr.tv)                                        | PVR for newsgroup and bittorrent users                                                                                                               | [linuxserver/sonarr](https://hub.docker.com/r/linuxserver/sonarr)                                | sonarr.       |
 | [Radarr](https://radarr.video)                                     | Movie collection manager for Usenet and BitTorrent users                                                                                             | [linuxserver/radarr](https://hub.docker.com/r/linuxserver/radarr)                                | radarr.       |
 | [Bazarr](https://www.bazarr.media/)                                | Companion application to Sonarr and Radarr that manages and downloads subtitles                                                                      | [linuxserver/bazarr](https://hub.docker.com/r/linuxserver/bazarr)                                | bazarr.       |
@@ -54,13 +55,14 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
 | [PIA WireGuard VPN](https://github.com/thrnz/docker-wireguard-pia) | Encapsulate qBittorrent traffic in [PIA](https://www.privateinternetaccess.com/) using [WireGuard](https://www.wireguard.com/) with port forwarding. | [thrnz/docker-wireguard-pia](https://hub.docker.com/r/thrnz/docker-wireguard-pia)                |               |
 | [qBittorrent](https://www.qbittorrent.org)                         | Bittorrent client with a complete web UI<br/>Uses VPN network<br/>Using Libtorrent 1.x                                                               | [linuxserver/qbittorrent:libtorrentv1](https://hub.docker.com/r/linuxserver/qbittorrent)         | qbittorrent.  |
 | [Unpackerr](https://unpackerr.zip)                                 | Automated Archive Extractions                                                                                                                        | [golift/unpackerr](https://hub.docker.com/r/golift/unpackerr)                                    |               |
-| [Jellyfin](https://jellyfin.org)                                   | Media server designed to organize, manage, and share digital media files to networked devices                                                        | [linuxserver/jellyfin](https://hub.docker.com/r/linuxserver/jellyfin)                            | jellyfin.     |
+| [Jellyfin](https://jellyfin.org)                                   | Media server designed to organize, manage, and share digital media files to networked devices                                                        | [jellyfin/jellyfin](https://hub.docker.com/r/jellyfin/jellyfin)                                  | jellyfin.     |
 | [Jellyseer](https://jellyfin.org)                                  | Manages requests for your media library                                                                                                              | [fallenbagel/jellyseerr](https://hub.docker.com/r/fallenbagel/jellyseerr)                        | jellyseer.    |
 | [Homepage](https://gethomepage.dev)                                | Application dashboard                                                                                                                                | [gethomepage/homepage](https://github.com/gethomepage/homepage/pkgs/container/homepage)          | home.         |
 | [Caddy](https://https://caddyserver.com/docs/)                     | Reverse proxy                                                                                                                                        | [slothcroissant/caddy-cloudflaredns](https://hub.docker.com/r/slothcroissant/caddy-cloudflaredns)|               |
 | [Watchtower](https://containrrr.dev/watchtower/)                   | Automated Docker images update                                                                                                                       | [containrrr/watchtower](https://hub.docker.com/r/containrrr/watchtower)                          |               |
 | [Autoheal](https://github.com/willfarrell/docker-autoheal/)        | Monitor and restart unhealthy Docker containers                                                                                                      | [willfarrell/autoheal](https://hub.docker.com/r/willfarrell/autoheal)                            |               |
 | [Lidarr](https://lidarr.audio)                                     | Music collection manager for Usenet and BitTorrent users<br/>                                                                                        | [linuxserver/lidarr](https://hub.docker.com/r/linuxserver/lidarr)                                | lidarr.       |
+| [Readarr](https://readarr.com/)                                    | ebook collection manager for Usenet and BitTorrent users<br/>                                                                                        | [linuxserver/readarr](https://hub.docker.com/r/linuxserver/readarr)                              | readarr.      |
 | [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr)       | Proxy server to bypass Cloudflare protection in Prowlarr<br/>                                                                                        | [flaresolverr/flaresolverr](https://hub.docker.com/r/flaresolverr/flaresolverr)                  |               |
 
 ## Quick Start
@@ -124,6 +126,8 @@ Steps for getting the API keys for these apps are listed below:
 | `RADARR_API_KEY`               | Radarr API key to show information in the homepage                                                                                                                                                     |                                                  |
 | `LIDARR_URL`                   | Subdomain for Lidarr                                                                                                                                                                                   | `https://lidarr.${DOMAIN}`                       |
 | `LIDARR_API_KEY`               | Lidarr API key to show information in the homepage                                                                                                                                                     |                                                  |
+| `READARR_URL`                  | Subdomain for Readarr                                                                                                                                                                                  | `https://readarr.${DOMAIN}`                      |
+| `READARR_API_KEY`              | Readarr API key to show information in the homepage                                                                                                                                                    |                                                  |
 | `PROWLARR_URL`                 | Subdomain for Prowlarr                                                                                                                                                                                 | `https://prowlarr.${DOMAIN}`                     |
 | `PROWLARR_API_KEY`             | Prowlarr API key to show information in the homepage                                                                                                                                                   |                                                  |
 | `BAZARR_URL`                   | Subdomain for Bazarr                                                                                                                                                                                   | `https://bazarr.${DOMAIN}`                       |
@@ -165,11 +169,11 @@ See the full list of PIA VPN locations here: https://serverlist.piaservers.net/v
 
 **You must set the credentials in the `PIA_*` environment variables, otherwise the VPN container will exit, and qBittorrent and the *Arr apps will not start.**
 
-## Sonarr, Radarr & Lidarr
+## Sonarr, Radarr, Lidarr & Readarr
 
 ### File Structure
 
-Sonarr, Radarr, and Lidarr must be configured to support hardlinks. This allows file transfers from the torrent downloads folder to the media storage folder, preventing file duplication and excess storage consumption.
+Sonarr, Radarr, Lidarr and Readarr must be configured to support hardlinks. This allows file transfers from the torrent downloads folder to the media storage folder, preventing file duplication and excess storage consumption.
 This is achieved by using a single volume shared by the qBittorrent client and the *arr apps.
 
 Subfolders are used to separate your TV shows, movies, and music files.
@@ -187,6 +191,7 @@ data
    ├── movies = Radarr
    └── tv = Sonarr
    └── music = Lidarr
+   └── books = Readarr
 ```
 
 After updating your storage volume with this folder structure, follow the below steps to add the appropriate directory to each *Arr app.
@@ -195,19 +200,24 @@ Within the *Arr app, go to Settings > Management.
 - In Sonarr, set the Root folder to `/data/media/tv`.
 - In Radarr, set the Root folder to `/data/media/movies`.
 - In Lidarr, set the Root folder to `/data/media/music`.
+- In Readarr, set the Root folder to `/data/media/books`.
 
 ### Download Client
 
 Add qBittorrent as a download client by clicking Settings > Download Clients. Set the host for qBittorrent to `localhost` and the port to `8080`. 
 Input the username and password you set for qBittorrent, then click the Test button to confirm the connection is functioning properly. If you do not see any errors, click Save.
 
-💡**Note:** You will need to repeat this process for all of the *arr apps (Prowlarr, Sonarr, Radarr, and Lidarr).
+💡**Note:** You will need to repeat this process for all of the *arr apps (Prowlarr, Sonarr, Radarr, Lidarr, and Readarr).
+
+### Readarr
+
+Readarr is an optional *arr app in this configuration. If you would like to add Readarr to your media stack, simply add `readarr` to the `COMPOSE_PROFILES` list in your .env file. (Ex. `COMPOSE_PROFILES=pihole,readarr`)
 
 ## Prowlarr
 
 Indexers for all of the *arr apps are configured and managed through Prowlarr. Indexers added to Prowlarr synchronize automatically to the other *arr apps, providing a one-stop location for indexer management.
 
-To sync indexers to Radarr, Sonarr and Lidarr, you must first add them as apps in Prowlarr. From Prowlarr, click Settings > Apps. Then click the respective *arr app.
+To sync indexers to Radarr, Sonarr, Lidarr, and Readarr, you must first add them as apps in Prowlarr. From Prowlarr, click Settings > Apps. Then click the respective *arr app.
 
 | *Arr App | Server URL                      |
 |----------|---------------------------------|
@@ -215,6 +225,7 @@ To sync indexers to Radarr, Sonarr and Lidarr, you must first add them as apps i
 | Radarr   | `http://localhost:7878/radarr`  |
 | Sonarr   | `http://localhost:8989/sonarr`  |
 | Lidarr   | `http://localhost:8686/lidarr`  |
+| Readarr  | `http://localhost:8787/readarr` |
 
 API keys for each individual *arr app can be found within Settings > Security > API Key (from the respective *arr app's web portal; ex. to get the API key for Sonarr, go to sonarr.<your-domain>, then click Settings > Security > API Key).
 Alternatively, you can find the API keys for the *arr apps with your `.env` file (assuming you ran the `update-config.sh` script).
@@ -225,7 +236,7 @@ See example screenshot below showing how Radarr is configured as an app within P
 
 ## qBittorrent
 
-Running `update-config.sh` will set qBittorrent's username to `admin` and password to `adminadmin` 
+Running `update-config.sh` will set qBittorrent's username to `admin` and password to `adminadmin`.
 
 ⚠️**Note:** `update-config.sh` will set the above credentials for qBittorrent **regardless** of the values you have set for `QBITTORRENT_USERNAME` and `QBITTORRENT_PASSWORD` in the .env file. Subsequent runs of `update-config.sh` will reset the credentials to username: `admin`, password: `adminadmin`. This is useful if you forget your qBittorrent Web UI credentials.
 

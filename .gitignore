@@ -22,6 +22,7 @@ docker-compose.override.yml
 /radarr
 /prowlarr
 /lidarr
+/readarr
 /bazarr
 /qbittorrent
 /pia

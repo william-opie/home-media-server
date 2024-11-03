@@ -1,0 +1,4 @@
+@readarr host readarr.{env.DOMAIN}
+handle @readarr {
+    reverse_proxy http://vpn:8787
+}
