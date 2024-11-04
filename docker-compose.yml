@@ -266,8 +266,8 @@ services:
       vpn:
         condition: service_healthy
     labels:
-      - homepage.group=Download
-      - homepage.name=readarr
+      - homepage.group=Media
+      - homepage.name=Readarr
       - homepage.icon=readarr.png
       - homepage.href=${READARR_URL}
       - homepage.description=Book management

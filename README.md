@@ -13,7 +13,7 @@ Differences between the original project and this fork:
 
 Requirements: Any Docker-capable recent Linux distro with Docker Engine and Docker Compose V2.
 
-![Docker-Compose NAS Homepage](https://thefinalsummer.com/wp-content/uploads/2024/07/screenshot-2024-07-17-203004.png "Homepage")
+![Docker-Compose NAS Homepage](https://thefinalsummer.com/wp-content/uploads/2024/11/screenshot-2024-11-03-194012.png "Homepage")
 
 ## Table of Contents
 

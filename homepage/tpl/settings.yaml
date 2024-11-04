@@ -5,6 +5,8 @@
 title: {{HOMEPAGE_VAR_TITLE}}
 
 background: https://images.pexels.com/photos/933054/pexels-photo-933054.jpeg
+theme: dark
+cardBlur: md
 
 headerStyle: {{HOMEPAGE_VAR_HEADER_STYLE}}
 
@@ -14,10 +16,10 @@ layout:
     columns: 3
   Download:
     style: row
-    columns: 2
+    columns: 3
   Networking:
-    style: row
-    columns: 2
+    style: column
+    columns: 1
 
 quicklaunch:
   searchDescriptions: true
