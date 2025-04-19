@@ -1,0 +1,4 @@
+@kiwix host kiwix.{env.DOMAIN}
+handle @kiwix {
+    reverse_proxy http://kiwix:8080
+}
