@@ -1,7 +1,8 @@
 .env
 Caddyfile
 /container-data
-/etc-pihole
+/etc-pihole/*
+!/etc-pihole/custom.list.template
 /etc-dnsmasq.d
 .idea
 docker-compose.override.yml
