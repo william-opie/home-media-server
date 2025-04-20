@@ -1,39 +1,39 @@
-# Docker Compose NAS
+# Home Media Server
 **NOTE: This is a fork; please see the original [docker-compose-nas project repo here](https://github.com/AdrienPoupa/docker-compose-nas).**
 
-This is a simple Docker compose project used to create a media server on your home network.
+This is a simple [Docker Compose](https://docs.docker.com/compose/) project used to create a media server on your home network.
 
-Differences between the original project and this fork:
+The main differences between the original project and this fork:
 * This project uses Caddy as a reverse proxy (instead of Traefik)
 * Pihole is installed by default (for ad-blocking & local DNS record management)
   * Note: If you do not want to use Pihole, simply remove `pihole` from the `COMPOSE_PROFILES` list within the .env file.
 * This fork sets all *arr apps to use the VPN connection by default
-* Readarr has been added as an optional *arr app.
+* [Kiwix](https://kiwix.org/en/) has been added as an optional application (remove `kiwix` from the `COMPOSE_PROFILES` list within the .env if you do not want Kiwix).
 * Minor homepage changes (set a background image, added a Pihole widget, & set widget units to imperial)
 
-Requirements: Any Docker-capable recent Linux distro with Docker Engine and Docker Compose V2.
+Requirements: Any Docker-capable recent Linux distro with Docker Engine and Docker Compose V2. I recommend using the current LTS version of [Ubuntu Server](https://ubuntu.com/download/server).
 
 ![Docker-Compose NAS Homepage](https://thefinalsummer.com/wp-content/uploads/2024/11/screenshot-2024-11-03-194012.png "Homepage")
 
 ## Table of Contents
 
 <!-- TOC -->
-* [Docker Compose NAS](#docker-compose-nas)
+* [Home Media Server](#home-media-server)
   * [Table of Contents](#table-of-contents)
   * [Applications](#applications)
   * [Quick Start](#quick-start)
     * [Homepage Widgets](#homepage-widgets)
   * [Environment Variables](#environment-variables)
   * [PIA WireGuard VPN](#pia-wireguard-vpn)
-  * [Sonarr, Radarr, Lidarr & Readarr](#sonarr-radarr-lidarr--readarr)
+  * [Sonarr, Radarr, & Lidarr](#sonarr-radarr--lidarr)
     * [File Structure](#file-structure)
     * [Download Client](#download-client)
-    * [Readarr](#readarr)
   * [Prowlarr](#prowlarr)
   * [qBittorrent](#qbittorrent)
     * [IP Leak Check](#ip-leak-check)
     * [VueTorrent Web UI](#vuetorrent-webui)
   * [Jellyfin](#jellyfin)
+  * [Kiwix](#kiwix)
   * [Homepage](#homepage)
   * [Jellyseerr](#jellyseerr)
   * [FlareSolverr](#flaresolverr)
@@ -62,25 +62,27 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
 | [Watchtower](https://containrrr.dev/watchtower/)                   | Automated Docker images update                                                                                                                       | [containrrr/watchtower](https://hub.docker.com/r/containrrr/watchtower)                          |               |
 | [Autoheal](https://github.com/willfarrell/docker-autoheal/)        | Monitor and restart unhealthy Docker containers                                                                                                      | [willfarrell/autoheal](https://hub.docker.com/r/willfarrell/autoheal)                            |               |
 | [Lidarr](https://lidarr.audio)                                     | Music collection manager for Usenet and BitTorrent users<br/>                                                                                        | [linuxserver/lidarr](https://hub.docker.com/r/linuxserver/lidarr)                                | lidarr.       |
-| [Readarr](https://readarr.com/)                                    | ebook collection manager for Usenet and BitTorrent users<br/>                                                                                        | [linuxserver/readarr](https://hub.docker.com/r/linuxserver/readarr)                              | readarr.      |
+| [Kiwix](https://github.com/kiwix)                                  | Open-source software for offline access to Wikipedia, TED talks, Stack Exchange, and many other resources.<br/>                                      | [ghcr.io/kiwix/kiwix-serve](ghcr.io/kiwix/kiwix-serve)                                           | kiwix.        |
 | [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr)       | Proxy server to bypass Cloudflare protection in Prowlarr<br/>                                                                                        | [flaresolverr/flaresolverr](https://hub.docker.com/r/flaresolverr/flaresolverr)                  |               |
 
 ## Quick Start
 💡**Note**: This quick start guide assumes the following:
-- You have [mounted your media storage drive](https://www.wikihow.com/Linux-How-to-Mount-Drive) on your server already. Make sure you've done this (and set the path for this media storage in the `.env` file) *before* starting the containers. 
+- You have mounted your media storage on your media server. Make sure you've completed this (and set the path for this media storage in the `.env` file) *before* starting the containers. 
+  - [WikiHow article for mounting a local storage drive](https://www.wikihow.com/Linux-How-to-Mount-Drive)
+  - [Ubuntu Server documentation for mounting an SMB share using CIFS](https://documentation.ubuntu.com/server/how-to/samba/mount-cifs-shares-permanently/)
   - See [File Structure](#file-structure) below for information on setting up folders/directories on your media storage.
 - Your server has a static DHCP lease on your LAN. (Check your router's documentation if you're not sure how to do this.)
-- You will set your media server's IP address as the primary DNS server on your LAN. 
+- You plan to set your media server's IP address as the primary DNS server on your LAN.
   - I recommend setting Cloudflare (1.1.1.1), Quad9 (9.9.9.9), or OpenDNS (208.67.222.222) as a secondary DNS server so that you can still access the Internet if your Pihole container goes down.
 - You have purchased a domain name and [linked it to Cloudflare](https://developers.cloudflare.com/fundamentals/setup/manage-domains/add-site/#1--add-site-in-cloudflare), and you have [generated a DNS Zone Edit API key](https://blog.gurucomputing.com.au/Reverse%20Proxies%20with%20Caddy/Adding%20Acme%20Certification/#api-keys).
 - You are using [Private Internet Access](https://www.privateinternetaccess.com/buy-vpn-online) as your VPN (see [PIA section below](#pia-wireguard-vpn)).
-- You have [created a Tailscale account](https://tailscale.com/kb/1017/install) and [installed Tailscale](https://tailscale.com/kb/1031/install-linux) on your server (and any other devices you want to access your server from when you are away from your LAN; see [Accessing from the outside with Tailscale](#accessing-from-the-outside-with-tailscale) for more info).
 
-First, clone this project onto your server using `git clone https://github.com/willam-opie/docker-compose-nas`.
+First, clone this project onto your server using `git clone https://github.com/willam-opie/home-media-server`.
 
-From the directory that you cloned the project into, copy the .env template file using `cp .env.example .env`, and set the variable values. See the [Environment Variables](#environment-variables) table below for more information.
+From the directory that you cloned the project into, copy the .env template file using `cp .env.example .env`, and input the variable values. See the [Environment Variables](#environment-variables) table below for more information.
 
-Next, if your host is running Ubuntu or Fedora, run `sudo bash pihole-setup.sh`. This alters the default DNS resolver settings [for compatibility with Pihole](https://github.com/pi-hole/docker-pi-hole?tab=readme-ov-file#installing-on-ubuntu-or-fedora) and copies custom.list.template to custom.list (within the etc-pihole directory).
+Next, if your host is running Ubuntu or Fedora, run `sudo bash pihole-setup.sh`. This alters the default DNS resolver settings [for compatibility with Pihole](https://github.com/pi-hole/docker-pi-hole?tab=readme-ov-file#installing-on-ubuntu-or-fedora).
+
 Then, run `sudo docker compose up -d` to start the media server containers.
 
 💡**Note:** By default, Docker is only accessible with root privileges. If you want to [use Docker as a regular user](https://docs.docker.com/engine/install/linux-postinstall/), you need to add your user to the 'docker' group.
@@ -126,8 +128,6 @@ Steps for getting the API keys for these apps are listed below:
 | `RADARR_API_KEY`               | Radarr API key to show information in the homepage                                                                                                                                                      |                                                  |
 | `LIDARR_URL`                   | Subdomain for Lidarr                                                                                                                                                                                    | `https://lidarr.${DOMAIN}`                       |
 | `LIDARR_API_KEY`               | Lidarr API key to show information in the homepage                                                                                                                                                      |                                                  |
-| `READARR_URL`                  | Subdomain for Readarr                                                                                                                                                                                   | `https://readarr.${DOMAIN}`                      |
-| `READARR_API_KEY`              | Readarr API key to show information in the homepage                                                                                                                                                     |                                                  |
 | `PROWLARR_URL`                 | Subdomain for Prowlarr                                                                                                                                                                                  | `https://prowlarr.${DOMAIN}`                     |
 | `PROWLARR_API_KEY`             | Prowlarr API key to show information in the homepage                                                                                                                                                    |                                                  |
 | `BAZARR_URL`                   | Subdomain for Bazarr                                                                                                                                                                                    | `https://bazarr.${DOMAIN}`                       |
@@ -158,7 +158,7 @@ Steps for getting the API keys for these apps are listed below:
 
 ## PIA WireGuard VPN
 
-[Private Interet Access](https://www.privateinternetaccess.com/buy-vpn-online) was chosen as the default VPN for this project because it supports WireGuard and [port forwarding](https://github.com/thrnz/docker-wireguard-pia/issues/26#issuecomment-868165281).
+[Private Interet Access](https://www.privateinternetaccess.com/buy-vpn-online) was chosen as the default VPN for this project because it supports WireGuard and [port forwarding](https://github.com/thrnz/docker-wireguard-pia/issues/26#issuecomment-868165281). PIA is also reasonably priced and they [do not store logs](https://www.privateinternetaccess.com/vpn-features/no-logs-vpn).
 
 Before starting the containers, update the `.env` file with your PIA credentials.
 
@@ -170,11 +170,11 @@ See the full list of PIA VPN locations here: https://serverlist.piaservers.net/v
 
 **You must set the credentials in the `PIA_*` environment variables, otherwise the VPN container will exit, and qBittorrent and the *Arr apps will not start.**
 
-## Sonarr, Radarr, Lidarr & Readarr
+## Sonarr, Radarr, & Lidarr
 
 ### File Structure
 
-Sonarr, Radarr, Lidarr and Readarr must be configured to support hardlinks. This allows file transfers from the torrent downloads folder to the media storage folder, preventing file duplication and excess storage consumption.
+Sonarr, Radarr, and Lidarr must be configured to support hardlinks. This allows file transfers from the torrent downloads folder to the media storage folder, preventing file duplication and excess storage consumption.
 This is achieved by using a single volume shared by the qBittorrent client and the *arr apps.
 
 Subfolders are used to separate your TV shows, movies, and music files.
@@ -192,7 +192,6 @@ data
    ├── movies = Radarr
    └── tv = Sonarr
    └── music = Lidarr
-   └── books = Readarr
 ```
 
 After updating your storage volume with this folder structure, follow the below steps to add the appropriate directory to each *Arr app.
@@ -201,24 +200,19 @@ Within the *Arr app, go to Settings > Management.
 - In Sonarr, set the Root folder to `/data/media/tv`.
 - In Radarr, set the Root folder to `/data/media/movies`.
 - In Lidarr, set the Root folder to `/data/media/music`.
-- In Readarr, set the Root folder to `/data/media/books`.
 
 ### Download Client
 
 Add qBittorrent as a download client by clicking Settings > Download Clients. Set the host for qBittorrent to `localhost` and the port to `8080`. 
 Input the username and password you set for qBittorrent, then click the Test button to confirm the connection is functioning properly. If you do not see any errors, click Save.
 
-💡**Note:** You will need to repeat this process for all of the *arr apps (Prowlarr, Sonarr, Radarr, Lidarr, and Readarr).
-
-### Readarr
-
-Readarr is an optional *arr app in this configuration. If you would like to add Readarr to your media stack, simply add `readarr` to the `COMPOSE_PROFILES` list in your .env file. (Ex. `COMPOSE_PROFILES=pihole,readarr`)
+💡**Note:** You will need to repeat this process for all of the *arr apps (Prowlarr, Sonarr, Radarr, and Lidarr).
 
 ## Prowlarr
 
 Indexers for all of the *arr apps are configured and managed through Prowlarr. Indexers added to Prowlarr synchronize automatically to the other *arr apps, providing a one-stop location for indexer management.
 
-To sync indexers to Radarr, Sonarr, Lidarr, and Readarr, you must first add them as apps in Prowlarr. From Prowlarr, click Settings > Apps. Then click the respective *arr app.
+To sync indexers to Radarr, Sonarr, and Lidarr, you must first add them as apps in Prowlarr. From Prowlarr, click Settings > Apps. Then click the respective *arr app.
 
 | *Arr App | Server URL                      |
 |----------|---------------------------------|
@@ -226,7 +220,6 @@ To sync indexers to Radarr, Sonarr, Lidarr, and Readarr, you must first add them
 | Radarr   | `http://localhost:7878/radarr`  |
 | Sonarr   | `http://localhost:8989/sonarr`  |
 | Lidarr   | `http://localhost:8686/lidarr`  |
-| Readarr  | `http://localhost:8787/readarr` |
 
 API keys for each individual *arr app can be found within Settings > Security > API Key (from the respective *arr app's web portal; ex. to get the API key for Sonarr, go to sonarr.<your-domain>, then click Settings > Security > API Key).
 Alternatively, you can find the API keys for the *arr apps with your `.env` file (assuming you ran the `update-config.sh` script).
