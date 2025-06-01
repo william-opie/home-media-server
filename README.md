@@ -29,6 +29,7 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
     * [File Structure](#file-structure)
     * [Download Client](#download-client)
   * [Prowlarr](#prowlarr)
+  * [Bazarr](#bazarr)
   * [qBittorrent](#qbittorrent)
     * [IP Leak Check](#ip-leak-check)
     * [VueTorrent Web UI](#vuetorrent-webui)
@@ -40,7 +41,8 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
   * [Caddy and SSL Certificates](#caddy-and-ssl-certificates)
     * [Accessing from the outside with Tailscale](#accessing-from-the-outside-with-tailscale)
     * [Expose DNS Server with Tailscale](#expose-dns-server-with-tailscale)
-  * [Customization](#customization)
+  * [Use Separate Paths for Torrents and Storage](#use-separate-paths-for-torrents-and-storage)
+
 <!-- TOC -->
 
 ## Applications
@@ -70,12 +72,13 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
 - You have mounted your media storage on your media server. Make sure you've completed this (and set the path for this media storage in the `.env` file) *before* starting the containers. 
   - [WikiHow article for mounting a local storage drive](https://www.wikihow.com/Linux-How-to-Mount-Drive)
   - [Ubuntu Server documentation for mounting an SMB share using CIFS](https://documentation.ubuntu.com/server/how-to/samba/mount-cifs-shares-permanently/)
-  - See [File Structure](#file-structure) below for information on setting up folders/directories on your media storage.
+  - See the [File Structure](#file-structure) section below for information on setting up folders/directories on your media storage.
 - Your server has a static DHCP lease on your LAN. (Check your router's documentation if you're not sure how to do this.)
 - You plan to set your media server's IP address as the primary DNS server on your LAN.
   - I recommend setting Cloudflare (1.1.1.1), Quad9 (9.9.9.9), or OpenDNS (208.67.222.222) as a secondary DNS server so that you can still access the Internet if your Pihole container goes down.
 - You have purchased a domain name and [linked it to Cloudflare](https://developers.cloudflare.com/fundamentals/setup/manage-domains/add-site/#1--add-site-in-cloudflare), and you have [generated a DNS Zone Edit API key](https://blog.gurucomputing.com.au/Reverse%20Proxies%20with%20Caddy/Adding%20Acme%20Certification/#api-keys).
 - You are using [Private Internet Access](https://www.privateinternetaccess.com/buy-vpn-online) as your VPN (see [PIA section below](#pia-wireguard-vpn)).
+- You have already [installed Docker](https://docs.docker.com/engine/install/ubuntu/) on your host.
 
 First, clone this project onto your server using `git clone https://github.com/willam-opie/home-media-server`.
 
@@ -227,6 +230,15 @@ Alternatively, you can find the API keys for the *arr apps with your `.env` file
 See example screenshot below showing how Radarr is configured as an app within Prowlarr:
 ![Prowlarr-Radarr App Config](https://thefinalsummer.com/wp-content/uploads/2024/07/screenshot-2024-07-20-164728.png "Radarr App Config")
 
+## Bazarr
+
+Bazarr's Wiki has a [setup guide](https://wiki.bazarr.media/Getting-Started/Setup-Guide/) that walks through how to configure the app. I recommend using OpenSubtitles.com and TVSubtitles for providers.
+
+Use the following values when linking Sonarr and Radarr to Bazarr:
+| *Arr App | Address    | Port | Base URL  | 
+|----------|------------|------|-----------| 
+| Sonarr   | localhost  | 8989 | /sonarr   |
+| Radarr   | localhost  | 7878 | /radarr   |
 
 ## qBittorrent
 
@@ -273,16 +285,17 @@ To use the VueTorrent WebUI, go to `qBittorrent`, `Options`, `Web UI`, `Use Alte
 
 ## Jellyfin
 
-To enable [hardware transcoding](https://jellyfin.org/docs/general/administration/hardware-acceleration/),
-depending on your system, you may need to add the following block:
+Carefully review Jellyfin's documentation on [hardware transcoding](https://jellyfin.org/docs/general/administration/hardware-acceleration/) if you want to enable it. I have provided a commented out configuration for transcoding with [NVIDIA GPUs](https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration/nvidia) (see below), but [you must install GPU drivers on your host](https://jellyfin.org/docs/general/post-install/transcoding/hardware-acceleration/nvidia#configure-with-linux-virtualization) for transcoding to function properly. It is a multi-step process. If something is not working right initially, re-read the docs and confirm you haven't missed a step.
 
-```    
-devices:
-  - /dev/dri/renderD128:/dev/dri/renderD128
-  - /dev/dri/card0:/dev/dri/card0
-```
+https://github.com/william-opie/home-media-server/blob/18643d00120456a1005060163935a0f68b3db103/docker-compose.yml#L37-L59
 
-Generally, running Docker on Linux you will want to use VA-API, but the exact mount paths may differ depending on your hardware.
+
+
+## Kiwix
+Kiwix is configured by default to open ZIM files from `${DATA_ROOT}/media/zim`. You can download/torrent ZIM files from [Kiwix's library](https://library.kiwix.org/#lang=eng).
+
+See the [Kiwix Docker README](https://github.com/kiwix/kiwix-tools/blob/main/docker/server/README.md) for more information about configuring Kiwix.
+
 
 ## Homepage
 
