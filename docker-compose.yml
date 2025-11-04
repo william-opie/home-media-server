@@ -375,6 +375,7 @@ services:
       - HOMEPAGE_VAR_WEATHER_LONG=${HOMEPAGE_VAR_WEATHER_LONG}
       - HOMEPAGE_VAR_WEATHER_TIME=${TIMEZONE}
       - HOMEPAGE_VAR_WEATHER_UNIT=${HOMEPAGE_VAR_WEATHER_UNIT}
+      - HOMEPAGE_VAR_DOMAIN=${DOMAIN}
     volumes:
       - ./homepage:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -407,6 +408,18 @@ services:
       homepage:
         condition: service_started
   
+  cleanuparr:
+    image: ghcr.io/cleanuparr/cleanuparr:latest
+    container_name: cleanuparr 
+    volumes:
+      - ${CONFIG_ROOT:-.}/cleanuparr/logs:/var/logs
+      - ${CONFIG_ROOT:-.}/cleanuparr:/config
+    environment:
+      - TZ=${TIMEZONE}
+      - PUID=${USER_ID}
+      - PGID=${GROUP_ID}
+      - PORT=11011
+
   watchtower:
     image: containrrr/watchtower
     container_name: watchtower
