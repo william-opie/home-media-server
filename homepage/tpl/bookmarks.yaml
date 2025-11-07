@@ -2,3 +2,10 @@
 # For configuration options and examples, please see:
 # https://gethomepage.dev/en/configs/bookmarks
 
+- Misc:
+    - Kiwix:
+        - icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/kiwix.svg
+          href: https://kiwix.{{HOMEPAGE_VAR_DOMAIN}}
+    - Cleanuparr:
+        - icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/cleanuperr.svg
+          href: https://cleanuparr.{{HOMEPAGE_VAR_DOMAIN}}

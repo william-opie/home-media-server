@@ -21,3 +21,4 @@ docker-compose.override.yml
 /pia-shared
 /letsencrypt
 /jellyseerr
+/cleanuparr

@@ -1,0 +1,4 @@
+@cleanuparr host cleanuparr.{env.DOMAIN}
+handle @cleanuparr {
+    reverse_proxy http://cleanuparr:11011
+}

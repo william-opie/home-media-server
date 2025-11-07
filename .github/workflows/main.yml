@@ -10,4 +10,4 @@ jobs:
       - name: Setup Environment Variables
         run: cp .env.example .env
       - name: Validate Docker Compose
-        run: docker-compose config
+        run: docker compose config
