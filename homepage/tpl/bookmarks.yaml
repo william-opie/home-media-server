@@ -9,3 +9,6 @@
     - Cleanuparr:
         - icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/cleanuperr.svg
           href: https://cleanuparr.{{HOMEPAGE_VAR_DOMAIN}}
+    - Huntarr:
+        - icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/huntarr.png
+          href: https://huntarr.{{HOMEPAGE_VAR_DOMAIN}}
