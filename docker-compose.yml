@@ -413,6 +413,7 @@ services:
   cleanuparr:
     image: ghcr.io/cleanuparr/cleanuparr:latest
     container_name: cleanuparr 
+    restart: always
     volumes:
       - ${CONFIG_ROOT:-.}/cleanuparr/logs:/var/logs
       - ${CONFIG_ROOT:-.}/cleanuparr:/config
@@ -421,6 +422,17 @@ services:
       - PUID=${USER_ID}
       - PGID=${GROUP_ID}
       - PORT=11011
+
+  huntarr:
+    image: huntarr/huntarr:latest
+    container_name: huntarr
+    restart: always
+    ports:
+      - "9705:9705"
+    volumes:
+      - ${CONFIG_ROOT:-.}/huntarr:/config
+    environment:
+      - TZ=${TIMEZONE}
 
   watchtower:
     image: containrrr/watchtower
