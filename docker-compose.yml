@@ -31,8 +31,6 @@ services:
       - homepage.widget.url=http://pihole
       - homepage.widget.key=${PIHOLE_API_KEY}
       - homepage.widget.version=6
-      # Following label disables watchtower from applying automatic updates to pihole container
-      - com.centurylinklabs.watchtower.enable=false
     profiles:
       - pihole
 
@@ -342,10 +340,6 @@ services:
       timeout: 10s
       retries: 3
     restart: always
-    labels:
-      # network mode is not supported: https://github.com/containrrr/watchtower/issues/1286#issuecomment-1214291660
-      - com.centurylinklabs.watchtower.enable=false
-
   unpackerr:
     image: golift/unpackerr
     container_name: unpackerr
@@ -434,15 +428,6 @@ services:
     environment:
       - TZ=${TIMEZONE}
 
-  watchtower:
-    image: containrrr/watchtower
-    container_name: watchtower
-    restart: always
-    environment:
-      - WATCHTOWER_CLEANUP=true
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-  
   autoheal:
     image: willfarrell/autoheal:latest
     container_name: autoheal
