@@ -165,7 +165,7 @@ services:
       - homepage.widget.key=${LIDARR_API_KEY}
 
   bazarr:
-    image: lscr.io/linuxserver/bazarr:1.5.5@sha256:d40ee61030a9afafddfdd58d160281b865bfcad7cb66e920116fd6fd40668cbb
+    image: ghcr.io/linuxserver/bazarr:1.5.5@sha256:d40ee61030a9afafddfdd58d160281b865bfcad7cb66e920116fd6fd40668cbb
     container_name: bazarr
     environment:
       - PUID=${USER_ID}
