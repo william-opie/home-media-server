@@ -69,7 +69,7 @@ services:
       - homepage.widget.key=${JELLYFIN_API_KEY}
   
   sonarr:
-    image: lscr.io/linuxserver/sonarr:4.0.16
+    image: lscr.io/linuxserver/sonarr:4.0.16@sha256:6f73bbba33391a338e20d836a60c86beaf2a865a89b706b339fc8cb0b8ce1559
     container_name: sonarr
     environment:
       - PUID=${USER_ID}
@@ -101,7 +101,7 @@ services:
       - homepage.widget.key=${SONARR_API_KEY}
 
   radarr:
-    image: lscr.io/linuxserver/radarr:6.0.4
+    image: lscr.io/linuxserver/radarr:6.0.4@sha256:f08dda38e7d12e5a722d9a5cb6e54acaf63c8598fefeefec88effe0c0d0038dd
     container_name: radarr
     environment:
       - PUID=${USER_ID}
@@ -133,7 +133,7 @@ services:
       - homepage.widget.key=${RADARR_API_KEY}
 
   lidarr:
-    image: lscr.io/linuxserver/lidarr:3.1.0
+    image: lscr.io/linuxserver/lidarr:3.1.0@sha256:6fba990e5b460ea53a3f91ebac823a3471f2254669ea96036d9411fedf0f65be
     container_name: lidarr
     environment:
       - PUID=${USER_ID}
@@ -221,7 +221,7 @@ services:
       - homepage.widget.key=${JELLYSEERR_API_KEY}
 
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:2.3.0
+    image: lscr.io/linuxserver/prowlarr:2.3.0@sha256:5339e9050cfcc0cb5331e9c98610ed9d4ce70ef481a5461ea664a13dda3f1eb0
     container_name: prowlarr
     environment:
       - PUID=${USER_ID}
@@ -278,7 +278,7 @@ services:
       - TZ=${TIMEZONE}
 
   qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:5.1.4-libtorrentv1
+    image: lscr.io/linuxserver/qbittorrent:5.1.4-libtorrentv1@sha256:9d16001782d83e41386c3a09df5bc9405b38acd35d6ee7c816967438aff4a1f8
     container_name: qbittorrent
     environment:
       - PUID=${USER_ID}
