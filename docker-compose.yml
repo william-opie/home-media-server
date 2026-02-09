@@ -1,7 +1,7 @@
 services:
   pihole:
     container_name: pihole
-    image: pihole/pihole:2025.11.1
+    image: pihole/pihole:2025.11.1@sha256:91dc91ddd413bf461c283204558f8f21839851e9824799075a7ceff7c77eea40
     ports:
       - "53:53/tcp"
       - "53:53/udp"
@@ -36,7 +36,7 @@ services:
 
   jellyfin:
     container_name: jellyfin
-    image: jellyfin/jellyfin:10.11.6
+    image: jellyfin/jellyfin:10.11.6@sha256:333b647716631443a43c7fabac4b0c46b4e2f036bad19547e00958f10f721b85
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DATA_ROOT}:/data
@@ -197,7 +197,7 @@ services:
       - homepage.widget.key=${BAZARR_API_KEY}
 
   jellyseerr:
-    image: fallenbagel/jellyseerr:2.7.3
+    image: fallenbagel/jellyseerr:2.7.3@sha256:4538137bc5af902dece165f2bf73776d9cf4eafb6dd714670724af8f3eb77764
     container_name: jellyseerr
     environment:
       - LOG_LEVEL=debug
@@ -252,7 +252,7 @@ services:
       - homepage.widget.key=${PROWLARR_API_KEY}
   
   kiwix:
-    image: ghcr.io/kiwix/kiwix-serve:3.8.1
+    image: ghcr.io/kiwix/kiwix-serve:3.8.1@sha256:9bffd4f940645d4d518f137e87b7865d3d0ef30f6c13fbe4a3b9e747be3cd1ad
     container_name: kiwix
     volumes:
       - ${DATA_ROOT}/media/zim:/data
@@ -262,7 +262,7 @@ services:
       - kiwix
 
   flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:v3.4.6
+    image: ghcr.io/flaresolverr/flaresolverr:v3.4.6@sha256:7962759d99d7e125e108e0f5e7f3cdbcd36161776d058d1d9b7153b92ef1af9e
     container_name: flaresolverr
     restart: always
     network_mode: "service:vpn"
@@ -313,7 +313,7 @@ services:
       - homepage.widget.password=${QBITTORRENT_PASSWORD}
 
   vpn:
-    image: thrnz/docker-wireguard-pia:20260201_master_eb24c58
+    image: thrnz/docker-wireguard-pia:20260201_master_eb24c58@sha256:de99e422eb92c068f6e7f50278a109b12abd97e0550665723c5868883644fea2
     container_name: vpn
     volumes:
       - ${CONFIG_ROOT:-.}/pia:/pia
@@ -342,7 +342,7 @@ services:
     restart: always
 
   unpackerr:
-    image: golift/unpackerr:0.14
+    image: golift/unpackerr:0.14@sha256:4214ee36961837aed614048ac88ad6ab72407e630935b1cba9011194d414c34e
     container_name: unpackerr
     volumes:
       - ${DOWNLOAD_ROOT}:/data/torrents
@@ -360,7 +360,7 @@ services:
       - no-new-privileges:true
 
   homepage:
-    image: ghcr.io/gethomepage/homepage:v1.10
+    image: ghcr.io/gethomepage/homepage:v1.10@sha256:0b596092c0b55fe4c65379a428a3fe90bd192f10d1b07d189a34fe5fabe7eedb
     container_name: homepage
     environment:
       - HOMEPAGE_ALLOWED_HOSTS=${HOMEPAGE_ALLOWED_HOSTS}
@@ -384,7 +384,7 @@ services:
     command: [sh, -c, "cp -n /app/config/tpl/*.yaml /app/config && node server.js"]
 
   caddy:
-    image: slothcroissant/caddy-cloudflaredns:2.10.2
+    image: slothcroissant/caddy-cloudflaredns:2.10.2@sha256:84c8d348217de95e773f156da1d447dea1417028f80ee1ad9358a50b472231ff
     container_name: caddy
     restart: unless-stopped
     security_opt:
@@ -406,7 +406,7 @@ services:
         condition: service_started
   
   cleanuparr:
-    image: ghcr.io/cleanuparr/cleanuparr:2.5.1
+    image: ghcr.io/cleanuparr/cleanuparr:2.5.1@sha256:47bb76b03676d5b9bb3c7a01f1a9005066d60db63b3f8379057d77f89daa6c37
     container_name: cleanuparr 
     restart: always
     volumes:
@@ -419,7 +419,7 @@ services:
       - PORT=11011
 
   autoheal:
-    image: willfarrell/autoheal:1.2.0
+    image: willfarrell/autoheal:1.2.0@sha256:31f580ef0279eaced5b38d631b08c474d70d8403c1c2fdd6ddcf2e879d5f3f7c
     container_name: autoheal
     restart: always
     environment:
