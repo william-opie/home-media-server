@@ -10,6 +10,7 @@ The main differences between the original project and this fork:
 * This fork sets all *arr apps to use the VPN connection by default
 * [Kiwix](https://kiwix.org/en/) has been added as an optional application (remove `kiwix` from the `COMPOSE_PROFILES` list within the .env if you do not want Kiwix).
 * Minor homepage changes (set a background image, added a Pihole widget, & set widget units to imperial)
+* Container image updates are managed through Renovate pull requests, then deployed manually.
 
 Requirements: Any Docker-capable recent Linux distro with Docker Engine and Docker Compose V2. I recommend using the current LTS version of [Ubuntu Server](https://ubuntu.com/download/server).
 
@@ -22,6 +23,7 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
   * [Table of Contents](#table-of-contents)
   * [Applications](#applications)
   * [Quick Start](#quick-start)
+    * [Updating Containers](#updating-containers)
     * [Homepage Widgets](#homepage-widgets)
   * [Environment Variables](#environment-variables)
   * [PIA WireGuard VPN](#pia-wireguard-vpn)
@@ -61,7 +63,6 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
 | [Jellyseer](https://jellyfin.org)                                  | Manages requests for your media library                                                                                                              | [fallenbagel/jellyseerr](https://hub.docker.com/r/fallenbagel/jellyseerr)                        | jellyseer.    |
 | [Homepage](https://gethomepage.dev)                                | Application dashboard                                                                                                                                | [gethomepage/homepage](https://github.com/gethomepage/homepage/pkgs/container/homepage)          | home.         |
 | [Caddy](https://https://caddyserver.com/docs/)                     | Reverse proxy                                                                                                                                        | [slothcroissant/caddy-cloudflaredns](https://hub.docker.com/r/slothcroissant/caddy-cloudflaredns)|               |
-| [Watchtower](https://containrrr.dev/watchtower/)                   | Automated Docker images update                                                                                                                       | [containrrr/watchtower](https://hub.docker.com/r/containrrr/watchtower)                          |               |
 | [Autoheal](https://github.com/willfarrell/docker-autoheal/)        | Monitor and restart unhealthy Docker containers                                                                                                      | [willfarrell/autoheal](https://hub.docker.com/r/willfarrell/autoheal)                            |               |
 | [Lidarr](https://lidarr.audio)                                     | Music collection manager for Usenet and BitTorrent users<br/>                                                                                        | [linuxserver/lidarr](https://hub.docker.com/r/linuxserver/lidarr)                                | lidarr.       |
 | [Kiwix](https://github.com/kiwix)                                  | Open-source software for offline access to Wikipedia, TED talks, Stack Exchange, and many other resources.<br/>                                      | [ghcr.io/kiwix/kiwix-serve](ghcr.io/kiwix/kiwix-serve)                                           | kiwix.        |
@@ -98,6 +99,17 @@ After running `docker compose up -d` for the first time, run `sudo bash update-c
 - Restarts the entire docker compose stack at the end of the script.
 
 ⚠️ **Note:** The first startup may take several minutes to complete. *Be patient.*
+
+### Updating Containers
+Container image updates are proposed by Renovate as pull requests. After you review and merge an update PR, deploy the changes from your server with:
+
+```bash
+git pull
+docker compose pull
+docker compose up -d
+```
+
+After deploying, verify container health with `docker compose ps`.
 
 ### Homepage Widgets
 The `update-config.sh` script inserts the API key values for the \*Arr apps in the `.env` file automatically. Unfortunately, this script *does not* set the API key variables for Jellyfin, Jellyseerr, or Pihole in the `.env` file. If you want the homepage widgets for these apps to display information for these apps, you will need to add their API keys to the `.env` file manually.

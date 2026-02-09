@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "dependencyDashboard": true,
+  "enabledManagers": [
+    "docker-compose"
+  ],
+  "timezone": "America/Los_Angeles",
+  "schedule": [
+    "before 5am on Sunday"
+  ],
+  "pinDigests": true,
+  "prConcurrentLimit": 5,
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "pinDigest"
+      ],
+      "groupName": "Pin Docker digests",
+      "schedule": [
+        "at any time"
+      ]
+    },
+    {
+      "matchDatasources": [
+        "docker"
+      ],
+      "groupName": "Docker image updates"
+    },
+    {
+      "matchPackagePrefixes": [
+        "lscr.io/linuxserver/"
+      ],
+      "groupName": "linuxserver images"
+    }
+  ]
+}
