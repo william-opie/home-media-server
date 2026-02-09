@@ -8,7 +8,7 @@
     "docker-compose"
   ],
   "timezone": "America/Los_Angeles",
-  "schedule": ["0 8-20 * * 0,5,6"],
+  "schedule": ["* 8-20 * * 0,5,6"],
   "pinDigests": true,
   "prConcurrentLimit": 5,
   "packageRules": [
