@@ -12,7 +12,6 @@
     "before 5am on Sunday"
   ],
   "pinDigests": true,
-  "prHourlyLimit": 2,
   "prConcurrentLimit": 5,
   "packageRules": [
     {

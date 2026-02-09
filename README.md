@@ -23,6 +23,7 @@ Requirements: Any Docker-capable recent Linux distro with Docker Engine and Dock
   * [Table of Contents](#table-of-contents)
   * [Applications](#applications)
   * [Quick Start](#quick-start)
+    * [Updating Containers](#updating-containers)
     * [Homepage Widgets](#homepage-widgets)
   * [Environment Variables](#environment-variables)
   * [PIA WireGuard VPN](#pia-wireguard-vpn)
