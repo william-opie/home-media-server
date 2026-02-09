@@ -1,4 +1,0 @@
-@huntarr host huntarr.{env.DOMAIN}
-handle @huntarr {
-    reverse_proxy http://huntarr:9705
-}
