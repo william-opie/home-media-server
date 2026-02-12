@@ -133,7 +133,7 @@ services:
       - homepage.widget.key=${RADARR_API_KEY}
 
   lidarr:
-    image: lscr.io/linuxserver/lidarr:3.1.0@sha256:6fba990e5b460ea53a3f91ebac823a3471f2254669ea96036d9411fedf0f65be
+    image: lscr.io/linuxserver/lidarr:3.1.0@sha256:37a3df74f4c2a6f10eead66f4d8034362ebf2866f935026b4a71dd888b9e7f08
     container_name: lidarr
     environment:
       - PUID=${USER_ID}
@@ -221,7 +221,7 @@ services:
       - homepage.widget.key=${JELLYSEERR_API_KEY}
 
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:2.3.0@sha256:5339e9050cfcc0cb5331e9c98610ed9d4ce70ef481a5461ea664a13dda3f1eb0
+    image: lscr.io/linuxserver/prowlarr:2.3.0@sha256:e74a1e093dcc223d671d4b7061e2b4946f1989a4d3059654ff4e623b731c9134
     container_name: prowlarr
     environment:
       - PUID=${USER_ID}
