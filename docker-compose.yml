@@ -406,7 +406,7 @@ services:
         condition: service_started
   
   cleanuparr:
-    image: ghcr.io/cleanuparr/cleanuparr:2.6.1@sha256:386d51d84749f41060ebe99fe3ba34772692a99c839eee19899653dd69d4fa37
+    image: ghcr.io/cleanuparr/cleanuparr:2.6.2@sha256:04fcf3b3854daac136e5ae278937ffa193558dc2d482c58a5e2472c9748b9dee
     container_name: cleanuparr 
     restart: always
     volumes:
