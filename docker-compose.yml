@@ -165,7 +165,7 @@ services:
       - homepage.widget.key=${LIDARR_API_KEY}
 
   bazarr:
-    image: ghcr.io/linuxserver/bazarr:1.5.5@sha256:18ff732dffcebd559d15a91845fc3360d49652ea01dccfbfd98b8248ceb86e38
+    image: ghcr.io/linuxserver/bazarr:1.5.5@sha256:1cf40186b1bc35bec87f4e4892d5d8c06086da331010be03e3459a86869c5e74
     container_name: bazarr
     environment:
       - PUID=${USER_ID}
@@ -406,7 +406,7 @@ services:
         condition: service_started
   
   cleanuparr:
-    image: ghcr.io/cleanuparr/cleanuparr:2.6.2@sha256:04fcf3b3854daac136e5ae278937ffa193558dc2d482c58a5e2472c9748b9dee
+    image: ghcr.io/cleanuparr/cleanuparr:2.6.4@sha256:025010f9f3f58b8bdbcdf4c5e577cd1697c5938bf29722659aac8f52033c375a
     container_name: cleanuparr 
     restart: always
     volumes:
