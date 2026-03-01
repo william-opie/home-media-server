@@ -165,7 +165,7 @@ services:
       - homepage.widget.key=${LIDARR_API_KEY}
 
   bazarr:
-    image: ghcr.io/linuxserver/bazarr:1.5.5@sha256:1cf40186b1bc35bec87f4e4892d5d8c06086da331010be03e3459a86869c5e74
+    image: ghcr.io/linuxserver/bazarr:1.5.6@sha256:b0bc617664dbca25845ac3b1bb6411b145b6a44a6d173071c9d2f426524fdd9f
     container_name: bazarr
     environment:
       - PUID=${USER_ID}
@@ -384,7 +384,7 @@ services:
     command: [sh, -c, "cp -n /app/config/tpl/*.yaml /app/config && node server.js"]
 
   caddy:
-    image: slothcroissant/caddy-cloudflaredns:2.10.2@sha256:84c8d348217de95e773f156da1d447dea1417028f80ee1ad9358a50b472231ff
+    image: slothcroissant/caddy-cloudflaredns:2.11.1@sha256:9e26289ba0c9ee4902441b0753cec482773c69a32898385f9b53159f4e066461
     container_name: caddy
     restart: unless-stopped
     security_opt:
@@ -406,7 +406,7 @@ services:
         condition: service_started
   
   cleanuparr:
-    image: ghcr.io/cleanuparr/cleanuparr:2.6.4@sha256:025010f9f3f58b8bdbcdf4c5e577cd1697c5938bf29722659aac8f52033c375a
+    image: ghcr.io/cleanuparr/cleanuparr:2.7.6@sha256:27cb25047206cab9ec2737e5d8cf840b88c5b6067c63c1bbcf2e1820129aa516
     container_name: cleanuparr 
     restart: always
     volumes:
