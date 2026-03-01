@@ -101,7 +101,7 @@ services:
       - homepage.widget.key=${SONARR_API_KEY}
 
   radarr:
-    image: lscr.io/linuxserver/radarr:6.0.4@sha256:6d3e68474ea146f995af98d3fb2cb1a14e2e4457ddaf035aa5426889e2f9249c
+    image: lscr.io/linuxserver/radarr:6.0.4@sha256:a360633a3682d41e96f71a07ff36ecbdf2394a9628465b84b0a8437087715b41
     container_name: radarr
     environment:
       - PUID=${USER_ID}
@@ -278,7 +278,7 @@ services:
       - TZ=${TIMEZONE}
 
   qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:5.1.4-libtorrentv1@sha256:c2ea95d0287c23d050fcf35cf50abd1a115fb3ed85323b0369ff3b3915b834d1
+    image: lscr.io/linuxserver/qbittorrent:5.1.4-libtorrentv1@sha256:500fe8742bb2a16f57552c4354f1f37d07420dc11eff36bd19ae9aa4b27f1a62
     container_name: qbittorrent
     environment:
       - PUID=${USER_ID}
