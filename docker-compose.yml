@@ -165,7 +165,7 @@ services:
       - homepage.widget.key=${LIDARR_API_KEY}
 
   bazarr:
-    image: ghcr.io/linuxserver/bazarr:1.5.6@sha256:b0bc617664dbca25845ac3b1bb6411b145b6a44a6d173071c9d2f426524fdd9f
+    image: ghcr.io/linuxserver/bazarr:1.5.6@sha256:94eee5e3e14430b7b144d4556be73963a7daf6f1bddc25586627f426465482ce
     container_name: bazarr
     environment:
       - PUID=${USER_ID}
@@ -252,7 +252,7 @@ services:
       - homepage.widget.key=${PROWLARR_API_KEY}
   
   kiwix:
-    image: ghcr.io/kiwix/kiwix-serve:3.8.1@sha256:9bffd4f940645d4d518f137e87b7865d3d0ef30f6c13fbe4a3b9e747be3cd1ad
+    image: ghcr.io/kiwix/kiwix-serve:3.8.2@sha256:ca41011170868edfe8e7563b5aabc3b3a9a0870ce0775581d7e30d1993e3bb9d
     container_name: kiwix
     volumes:
       - ${DATA_ROOT}/media/zim:/data
@@ -342,7 +342,7 @@ services:
     restart: always
 
   unpackerr:
-    image: golift/unpackerr:0.14@sha256:4214ee36961837aed614048ac88ad6ab72407e630935b1cba9011194d414c34e
+    image: golift/unpackerr:0.15@sha256:5c138c86e43826a50729678d915932faa9ba7c855648cff59fc93c38203a01db
     container_name: unpackerr
     volumes:
       - ${DOWNLOAD_ROOT}:/data/torrents
@@ -406,7 +406,7 @@ services:
         condition: service_started
   
   cleanuparr:
-    image: ghcr.io/cleanuparr/cleanuparr:2.7.6@sha256:27cb25047206cab9ec2737e5d8cf840b88c5b6067c63c1bbcf2e1820129aa516
+    image: ghcr.io/cleanuparr/cleanuparr:2.7.7@sha256:7701be7b364b2ac2097ff13b80f2d3e98de0f51ac331743b4ea0291fccd57692
     container_name: cleanuparr 
     restart: always
     volumes:
