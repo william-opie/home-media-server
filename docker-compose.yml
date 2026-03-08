@@ -278,7 +278,7 @@ services:
       - TZ=${TIMEZONE}
 
   qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:5.1.4-libtorrentv1@sha256:500fe8742bb2a16f57552c4354f1f37d07420dc11eff36bd19ae9aa4b27f1a62
+    image: lscr.io/linuxserver/qbittorrent:5.1.4-libtorrentv1@sha256:4f6b28739ae2279559fdc07fd03809f99760481e332f2d93ee556201aa0ad433
     container_name: qbittorrent
     environment:
       - PUID=${USER_ID}
