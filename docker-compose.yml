@@ -342,7 +342,7 @@ services:
     restart: always
 
   unpackerr:
-    image: golift/unpackerr:0.15@sha256:5c138c86e43826a50729678d915932faa9ba7c855648cff59fc93c38203a01db
+    image: golift/unpackerr:0.15@sha256:a53c9d46d743d0d0bfb4ecc1e42e5709333a13b7aa300da6f8327e26b893f7f4
     container_name: unpackerr
     volumes:
       - ${DOWNLOAD_ROOT}:/data/torrents
