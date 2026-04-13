@@ -1,7 +1,7 @@
 services:
   pihole:
     container_name: pihole
-    image: pihole/pihole:2026.02.0@sha256:ee348529cea9601df86ad94d62a39cad26117e1eac9e82d8876aa0ec7fe1ba27
+    image: pihole/pihole:2026.04.0@sha256:300cc8f9e966b00440358aafef21f91b32dfe8887e8bd9a6193ed1c4328655d4
     ports:
       - "53:53/tcp"
       - "53:53/udp"
@@ -36,7 +36,7 @@ services:
 
   jellyfin:
     container_name: jellyfin
-    image: jellyfin/jellyfin:10.11.6@sha256:333b647716631443a43c7fabac4b0c46b4e2f036bad19547e00958f10f721b85
+    image: jellyfin/jellyfin:10.11.8@sha256:1694ff069f0c9dafb283c36765175606866769f5d72f2ed56b6a0f1be922fc37
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DATA_ROOT}:/data
@@ -165,7 +165,7 @@ services:
       - homepage.widget.key=${LIDARR_API_KEY}
 
   bazarr:
-    image: ghcr.io/linuxserver/bazarr:1.5.6@sha256:9a631194c0dee21c85b5bff59e23610e1ae2f54594e922973949d271102e585e
+    image: ghcr.io/linuxserver/bazarr:1.5.6@sha256:21a4813c5ba120d72ac5f54869b790792bda0784205268eccbc204adb6dbe485
     container_name: bazarr
     environment:
       - PUID=${USER_ID}
@@ -252,7 +252,7 @@ services:
       - homepage.widget.key=${PROWLARR_API_KEY}
   
   kiwix:
-    image: ghcr.io/kiwix/kiwix-serve:3.8.2@sha256:acdab28186a66b51bfd4202210c6732931ea95cf41c711148a0c9770b9fcc9e1
+    image: ghcr.io/kiwix/kiwix-serve:3.8.2@sha256:0b6541355b250c6b45d2d7725e88f22f1d6a0f45ad9480d9c0bd4bc58436a12f
     container_name: kiwix
     volumes:
       - ${DATA_ROOT}/media/zim:/data
@@ -360,7 +360,7 @@ services:
       - no-new-privileges:true
 
   homepage:
-    image: ghcr.io/gethomepage/homepage:v1.12@sha256:9627769818fbfb14147d3e633e57cef9c27c0c5f07585f5a1d6c3d3425b3b33c
+    image: ghcr.io/gethomepage/homepage:v1.12@sha256:cc84f2f5eb3c7734353701ccbaa24ed02dacb0d119114e50e4251e2005f3990a
     container_name: homepage
     environment:
       - HOMEPAGE_ALLOWED_HOSTS=${HOMEPAGE_ALLOWED_HOSTS}
@@ -384,7 +384,7 @@ services:
     command: [sh, -c, "cp -n /app/config/tpl/*.yaml /app/config && node server.js"]
 
   caddy:
-    image: slothcroissant/caddy-cloudflaredns:2.11.2@sha256:ebfd90a33f8afee94f728bcfe4f6dd91a26115ae1edff0853bc656f0cc547a75
+    image: slothcroissant/caddy-cloudflaredns:2.11.2@sha256:e4a18d39305b31fb334c97b5f85556633eada56a1030e3fc86ecf1b4627fb670
     container_name: caddy
     restart: unless-stopped
     security_opt:
@@ -406,7 +406,7 @@ services:
         condition: service_started
   
   cleanuparr:
-    image: ghcr.io/cleanuparr/cleanuparr:2.9.2@sha256:db36f03f3455e5b50ab5722c3f8ef05193374e92467adf98a49c86be420b8779
+    image: ghcr.io/cleanuparr/cleanuparr:2.9.6@sha256:be51a6a382072dfa98480a01a111d3ff7a8a032ab0e91421b627c11fc14e9eb3
     container_name: cleanuparr 
     restart: always
     volumes:
